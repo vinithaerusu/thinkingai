@@ -1,0 +1,14 @@
+{
+  "name": "thinkingai",
+  "version": "1.0.0",
+  "description": "A thinking tool that helps people understand things through examples and pattern discovery",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "@supabase/supabase-js": "^2.99.0"
+  }
+}
