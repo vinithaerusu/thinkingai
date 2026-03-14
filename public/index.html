@@ -9,18 +9,23 @@
 <body>
   <header>
     <h1>ThinkingAI</h1>
-    <p class="tagline">figure things out</p>
+    <span class="tag">figure things out</span>
   </header>
+
   <div id="chat">
-    <div id="welcome">
-      <p>What do you want to understand?</p>
+    <div class="welcome">
+      <h2>Figure anything out</h2>
+      <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
     </div>
   </div>
+
   <div id="input-area">
-    <textarea id="user-input" placeholder="Ask anything you want to figure out..." rows="1"></textarea>
-    <button id="send-btn">Send</button>
+    <div id="input-wrap">
+      <textarea id="input" rows="1" placeholder="What do you want to figure out?" autofocus></textarea>
+      <button id="send">Send</button>
+    </div>
   </div>
-  <p class="privacy-note">Conversations may be logged to improve the experience.</p>
+
   <script src="/app.js"></script>
 </body>
 </html>
