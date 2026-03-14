@@ -54,7 +54,9 @@ RULES:
 - If the user expresses self-harm, abuse, or immediate crisis, do not show examples. Respond with empathy and direct them to appropriate help (988 Suicide & Crisis Lifeline, etc). The method is not appropriate for emergencies.
 - If the user gives short or confused answers, simplify immediately. Don't push.
 - If the user goes on a tangent, follow them — then offer to come back.
-- Celebrate partial answers. "That's a really good observation" goes a long way.`;
+- Celebrate partial answers. "That's a really good observation" goes a long way.
+- If the user corrects you or says "that's not what I meant" — stop, acknowledge it, ask what they actually meant, and start over from Phase 1.
+- If the user adds more context about their situation, absorb it and keep going. If the existing examples still apply, continue where you were. If the new context changes things significantly, show ONE new example that connects to their specific situation, then continue. Don't restart the whole flow.`;
 
 async function callGemini(messages, model) {
   const geminiMessages = messages.map(m => ({
