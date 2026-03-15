@@ -52,6 +52,48 @@ function startMode() {
   }
 
   input.focus();
+
+  // Trigger first message from the model (only for understand and structured)
+  if (currentMode === "understand" || currentMode === "structured") {
+    fetchGreeting();
+  }
+}
+
+async function fetchGreeting() {
+  showTyping();
+  sending = true;
+  send.disabled = true;
+
+  const greetMsg = { role: "user", content: "hi" };
+  messages.push(greetMsg);
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages,
+        sessionId,
+        mode: getEffectiveMode(),
+      }),
+    });
+
+    hideTyping();
+
+    if (!res.ok) throw new Error("Request failed");
+
+    const data = await res.json();
+    messages.push({ role: "assistant", content: data.reply });
+    addMsg("ai", data.reply);
+  } catch (err) {
+    hideTyping();
+    addMsg("ai", "Something went wrong. Please try again in a moment.");
+    messages.pop();
+  }
+
+  sending = false;
+  send.disabled = false;
+  input.focus();
 }
 
 // Toggle thinking mode in chat
