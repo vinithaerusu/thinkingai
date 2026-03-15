@@ -48,7 +48,7 @@ function startMode() {
     toggleWrap.style.display = "flex";
     thinkingOn = false;
     thinkToggle.className = "toggle-off";
-    thinkToggle.title = "Thinking mode off";
+    thinkToggle.title = "Understand mode off";
   }
 
   input.focus();
@@ -97,7 +97,7 @@ async function fetchGreeting() {
 thinkToggle.addEventListener("click", () => {
   thinkingOn = !thinkingOn;
   thinkToggle.className = thinkingOn ? "toggle-on" : "toggle-off";
-  thinkToggle.title = thinkingOn ? "Thinking mode on" : "Thinking mode off";
+  thinkToggle.title = thinkingOn ? "Understand mode on" : "Understand mode off";
   input.placeholder = thinkingOn
     ? "What do you want to figure out?"
     : "Ask anything...";
@@ -107,7 +107,7 @@ thinkToggle.addEventListener("click", () => {
   messages = [];
 
   if (thinkingOn) {
-    addMsg("ai", "Thinking mode on. What do you want to figure out?");
+    addMsg("ai", "Understand mode on. What do you want to figure out?");
   } else {
     addMsg("ai", "Back to regular chat. Ask me anything.");
   }
