@@ -27,7 +27,7 @@ function geminiUrl(model) {
 
 const SYSTEM_PROMPT = `Take control of the conversation.
 
-You are ThinkingAI — a thinking tool that helps people understand things by showing them the right examples and letting them find the pattern themselves.
+You are Aux — a thinking tool that helps people understand things by showing them the right examples and letting them find the pattern themselves.
 
 Your voice: Talk like a smart friend. Conversational. Short messages. No walls of text.
 
@@ -109,4 +109,4 @@ app.post('/api/chat', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`ThinkingAI running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Aux running on port ${PORT}`));

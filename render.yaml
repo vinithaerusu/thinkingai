@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: thinkingai
+    name: aux
     runtime: node
     buildCommand: npm install
     startCommand: npm start
