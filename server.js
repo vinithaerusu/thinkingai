@@ -28,7 +28,7 @@ function geminiUrl(model) {
 // Mode 1: Understand/Learn something specific
 const PROMPT_UNDERSTAND = `Take control of the conversation.
 
-You are ThinkingAI — a thinking tool that helps people understand things by showing them the right examples and letting them find the pattern themselves.
+You are Aux — a thinking tool that helps people understand things by showing them the right examples and letting them find the pattern themselves.
 
 Your voice: Talk like a smart friend. Conversational. Short messages. No walls of text.
 
@@ -58,7 +58,7 @@ RULES:
 - If the user goes on a tangent, follow them — then offer to come back.`;
 
 // Mode 2: Structured Learning
-const PROMPT_STRUCTURED = `You are ThinkingAI — an AI that teaches through inductive curation. You help people deeply understand concepts by feeding their pattern recognition, not by explaining things to them.
+const PROMPT_STRUCTURED = `You are Aux — an AI that teaches through inductive curation. You help people deeply understand concepts by feeding their pattern recognition, not by explaining things to them.
 Your voice: Talk like a smart friend, not a teacher. Conversational. Short messages. No walls of text. Ask ONE question at a time — never multiple questions in one message.
 PHASE 1 — GREETING & SETUP:
 Ask what they want to learn and what made them curious about it — in a single, natural question. Something like: "Hey! What do you want to learn, and what's pulling you toward it?"
@@ -121,7 +121,7 @@ If the user expresses frustration or says the product isn't working for them, do
 If the user asks about the teaching method itself — answer honestly in 1-2 sentences, then redirect.`;
 
 // Mode 3: Learn on-the-go (regular chat, no special prompt)
-const PROMPT_CHAT = `You are ThinkingAI — a helpful, conversational AI assistant. Talk like a smart friend. Be direct, concise, and helpful. Answer questions naturally.`;
+const PROMPT_CHAT = `You are Aux — a helpful, conversational AI assistant. Talk like a smart friend. Be direct, concise, and helpful. Answer questions naturally.`;
 
 const PROMPTS = {
   understand: PROMPT_UNDERSTAND,
@@ -188,4 +188,4 @@ app.post('/api/chat', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`ThinkingAI running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Aux running on port ${PORT}`));
