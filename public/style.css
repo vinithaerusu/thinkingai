@@ -41,6 +41,15 @@ header .tag,
   color: #ccc;
 }
 
+#mode-label {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  padding: 8px 0 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
 #chat {
   flex: 1;
   overflow-y: auto;

@@ -6,6 +6,7 @@ const welcome = document.getElementById("welcome");
 const inputArea = document.getElementById("input-area");
 const toggleWrap = document.getElementById("toggle-wrap");
 const thinkToggle = document.getElementById("think-toggle");
+const modeLabel = document.getElementById("mode-label");
 
 const sessionId = crypto.randomUUID();
 let messages = [];
@@ -27,6 +28,14 @@ function startMode() {
   messages = [];
 
   modeSwitch.textContent = "Switch Mode";
+
+  const modeNames = {
+    understand: "Understand",
+    structured: "Structured Learning",
+    chat: "Learn on-the-go",
+  };
+  modeLabel.textContent = modeNames[currentMode];
+  modeLabel.style.display = "block";
 
   if (currentMode === "understand") {
     input.placeholder = "What do you want to figure out?";
@@ -65,6 +74,7 @@ modeSwitch.addEventListener("click", () => {
   inputArea.style.display = "none";
   currentMode = null;
   messages = [];
+  modeLabel.style.display = "none";
 });
 
 function getEffectiveMode() {
