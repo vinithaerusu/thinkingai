@@ -64,15 +64,12 @@ async function fetchGreeting() {
   sending = true;
   send.disabled = true;
 
-  const greetMsg = { role: "user", content: "hi" };
-  messages.push(greetMsg);
-
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        messages,
+        messages: [{ role: "user", content: "hi" }],
         sessionId,
         mode: getEffectiveMode(),
       }),
@@ -83,12 +80,12 @@ async function fetchGreeting() {
     if (!res.ok) throw new Error("Request failed");
 
     const data = await res.json();
+    // Only keep the model's greeting in history, not the hidden "hi"
     messages.push({ role: "assistant", content: data.reply });
     addMsg("ai", data.reply);
   } catch (err) {
     hideTyping();
     addMsg("ai", "Something went wrong. Please try again in a moment.");
-    messages.pop();
   }
 
   sending = false;
@@ -96,7 +93,7 @@ async function fetchGreeting() {
   input.focus();
 }
 
-// Toggle thinking mode in chat
+// Toggle thinking mode in chat — resets conversation to avoid prompt/history mismatch
 thinkToggle.addEventListener("click", () => {
   thinkingOn = !thinkingOn;
   thinkToggle.className = thinkingOn ? "toggle-on" : "toggle-off";
@@ -104,6 +101,16 @@ thinkToggle.addEventListener("click", () => {
   input.placeholder = thinkingOn
     ? "What do you want to figure out?"
     : "Ask anything...";
+
+  // Clear chat and reset messages when toggling
+  chat.innerHTML = "";
+  messages = [];
+
+  if (thinkingOn) {
+    addMsg("ai", "Thinking mode on. What do you want to figure out?");
+  } else {
+    addMsg("ai", "Back to regular chat. Ask me anything.");
+  }
 });
 
 // Switch mode button — reset to welcome
