@@ -68,7 +68,7 @@ async function callGemini(messages, model) {
       contents: geminiMessages,
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 1024
+        maxOutputTokens: 2048
       }
     })
   });
@@ -90,18 +90,14 @@ app.post('/api/chat', async (req, res) => {
     try {
       reply = await callGemini(messages, PRIMARY_MODEL);
     } catch (err) {
-      if (err.status === 429) {
-        console.log(`${PRIMARY_MODEL} rate limited, falling back to ${FALLBACK_MODEL}`);
-        try {
-          reply = await callGemini(messages, FALLBACK_MODEL);
-        } catch (fallbackErr) {
-          if (fallbackErr.status === 429) {
-            return res.status(429).json({ error: 'Rate limit reached. Please try again later.' });
-          }
-          throw fallbackErr;
+      console.log(`${PRIMARY_MODEL} failed (${err.status}), falling back to ${FALLBACK_MODEL}`);
+      try {
+        reply = await callGemini(messages, FALLBACK_MODEL);
+      } catch (fallbackErr) {
+        if (fallbackErr.status === 429) {
+          return res.status(429).json({ error: 'Rate limit reached. Please try again later.' });
         }
-      } else {
-        throw err;
+        throw fallbackErr;
       }
     }
 
