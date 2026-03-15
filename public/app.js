@@ -1,15 +1,81 @@
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 const send = document.getElementById("send");
+const modeSwitch = document.getElementById("mode-switch");
+const welcome = document.getElementById("welcome");
+const inputArea = document.getElementById("input-area");
+const toggleWrap = document.getElementById("toggle-wrap");
+const thinkToggle = document.getElementById("think-toggle");
 
 const sessionId = crypto.randomUUID();
 let messages = [];
 let sending = false;
+let currentMode = null; // 'understand', 'structured', 'chat'
+let thinkingOn = false; // for learn-on-the-go toggle
+
+// Mode selection
+document.querySelectorAll(".mode-card").forEach((card) => {
+  card.addEventListener("click", () => {
+    currentMode = card.dataset.mode;
+    startMode();
+  });
+});
+
+function startMode() {
+  welcome.style.display = "none";
+  inputArea.style.display = "block";
+  messages = [];
+
+  if (currentMode === "understand") {
+    input.placeholder = "What do you want to figure out?";
+    toggleWrap.style.display = "none";
+    modeSwitch.textContent = "Understand";
+  } else if (currentMode === "structured") {
+    input.placeholder = "What do you want to learn?";
+    toggleWrap.style.display = "none";
+    modeSwitch.textContent = "Structured";
+  } else if (currentMode === "chat") {
+    input.placeholder = "Ask anything...";
+    toggleWrap.style.display = "flex";
+    thinkingOn = false;
+    thinkToggle.className = "toggle-off";
+    thinkToggle.title = "Thinking mode off";
+    modeSwitch.textContent = "Chat";
+  }
+
+  input.focus();
+}
+
+// Toggle thinking mode in chat
+thinkToggle.addEventListener("click", () => {
+  thinkingOn = !thinkingOn;
+  thinkToggle.className = thinkingOn ? "toggle-on" : "toggle-off";
+  thinkToggle.title = thinkingOn ? "Thinking mode on" : "Thinking mode off";
+  input.placeholder = thinkingOn
+    ? "What do you want to figure out?"
+    : "Ask anything...";
+});
+
+// Switch mode button — reset to welcome
+modeSwitch.addEventListener("click", () => {
+  if (!currentMode) return;
+  // Clear chat
+  chat.innerHTML = "";
+  chat.appendChild(welcome);
+  welcome.style.display = "";
+  inputArea.style.display = "none";
+  currentMode = null;
+  messages = [];
+});
+
+function getEffectiveMode() {
+  if (currentMode === "chat") {
+    return thinkingOn ? "understand" : "chat";
+  }
+  return currentMode;
+}
 
 function addMsg(role, text) {
-  const welcome = chat.querySelector(".welcome");
-  if (welcome) welcome.remove();
-
   const div = document.createElement("div");
   div.className = `msg ${role === "user" ? "user" : "ai"}`;
 
@@ -69,13 +135,20 @@ async function sendMessage() {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, sessionId }),
+      body: JSON.stringify({
+        messages,
+        sessionId,
+        mode: getEffectiveMode(),
+      }),
     });
 
     hideTyping();
 
     if (res.status === 429) {
-      addMsg("ai", "I'm being rate limited. Wait about 30 seconds and try sending your message again.");
+      addMsg(
+        "ai",
+        "I'm being rate limited. Wait about 30 seconds and try sending your message again."
+      );
       messages.pop();
       sending = false;
       send.disabled = false;

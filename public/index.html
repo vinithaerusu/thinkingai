@@ -9,19 +9,38 @@
 <body>
   <header>
     <h1>ThinkingAI</h1>
-    <span class="tag">figure things out</span>
+    <button id="mode-switch" class="tag" title="Switch mode">Switch Mode</button>
   </header>
 
   <div id="chat">
-    <div class="welcome">
+    <div class="welcome" id="welcome">
       <h2>Figure anything out</h2>
-      <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
+      <p>Choose how you want to learn</p>
+      <div class="mode-cards">
+        <button class="mode-card" data-mode="understand">
+          <div class="mode-title">Understand</div>
+          <div class="mode-desc">I show you examples and let you find the pattern yourself</div>
+        </button>
+        <button class="mode-card" data-mode="structured">
+          <div class="mode-title">Structured Learning</div>
+          <div class="mode-desc">Learn a topic step-by-step through guided discovery</div>
+        </button>
+        <button class="mode-card" data-mode="chat">
+          <div class="mode-title">Learn on-the-go</div>
+          <div class="mode-desc">Regular chat — toggle thinking mode anytime</div>
+        </button>
+      </div>
     </div>
   </div>
 
-  <div id="input-area">
+  <div id="input-area" style="display: none;">
     <div id="input-wrap">
       <textarea id="input" rows="1" placeholder="What do you want to figure out?" autofocus></textarea>
+      <div id="toggle-wrap" style="display: none;">
+        <button id="think-toggle" class="toggle-off" title="Toggle thinking mode">
+          <span class="toggle-icon">&#9679;</span>
+        </button>
+      </div>
       <button id="send">Send</button>
     </div>
   </div>
