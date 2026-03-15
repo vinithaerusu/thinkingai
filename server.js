@@ -20,7 +20,7 @@ if (!GEMINI_API_KEY) {
 }
 
 const PRIMARY_MODEL = 'gemini-2.5-flash';
-const FALLBACK_MODEL = 'gemini-3.0-flash';
+const FALLBACK_MODEL = 'gemini-3.1-flash-lite-preview';
 
 function geminiUrl(model) {
   return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
