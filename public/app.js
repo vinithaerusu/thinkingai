@@ -26,21 +26,20 @@ function startMode() {
   inputArea.style.display = "block";
   messages = [];
 
+  modeSwitch.textContent = "Switch Mode";
+
   if (currentMode === "understand") {
     input.placeholder = "What do you want to figure out?";
     toggleWrap.style.display = "none";
-    modeSwitch.textContent = "Understand";
   } else if (currentMode === "structured") {
     input.placeholder = "What do you want to learn?";
     toggleWrap.style.display = "none";
-    modeSwitch.textContent = "Structured";
   } else if (currentMode === "chat") {
     input.placeholder = "Ask anything...";
     toggleWrap.style.display = "flex";
     thinkingOn = false;
     thinkToggle.className = "toggle-off";
     thinkToggle.title = "Thinking mode off";
-    modeSwitch.textContent = "Chat";
   }
 
   input.focus();
