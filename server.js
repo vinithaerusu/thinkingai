@@ -19,8 +19,7 @@ if (!GEMINI_API_KEY) {
   process.exit(1);
 }
 
-const PRIMARY_MODEL = 'gemini-2.5-flash';
-const FALLBACK_MODEL = 'gemini-3.1-flash-lite-preview';
+const MODEL = 'gemini-3.1-flash-lite-preview';
 
 function geminiUrl(model) {
   return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
@@ -86,20 +85,7 @@ app.post('/api/chat', async (req, res) => {
   const { messages, sessionId } = req.body;
 
   try {
-    let reply;
-    try {
-      reply = await callGemini(messages, PRIMARY_MODEL);
-    } catch (err) {
-      console.log(`${PRIMARY_MODEL} failed (${err.status}), falling back to ${FALLBACK_MODEL}`);
-      try {
-        reply = await callGemini(messages, FALLBACK_MODEL);
-      } catch (fallbackErr) {
-        if (fallbackErr.status === 429) {
-          return res.status(429).json({ error: 'Rate limit reached. Please try again later.' });
-        }
-        throw fallbackErr;
-      }
-    }
+    const reply = await callGemini(messages, MODEL);
 
     // Log to Supabase if configured
     if (supabase && sessionId) {
