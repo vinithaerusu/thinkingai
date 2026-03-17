@@ -108,6 +108,7 @@ function resetChat() {
   chat.innerHTML = `
     <div class="welcome">
       <h2>Figure anything out</h2>
+      <div class="accent-line"></div>
       <p>I show you the right examples and let you find the pattern yourself. Just type what you want to understand.</p>
     </div>`;
   input.value = "";
