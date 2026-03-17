@@ -115,7 +115,7 @@ h1 {
   color: var(--ink);
   letter-spacing: -0.01em;
   margin-bottom: 24px;
-  max-width: 10ch;
+  max-width: 14ch;
 }
 
 h1 em {
