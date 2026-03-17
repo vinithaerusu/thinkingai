@@ -27,7 +27,7 @@ html, body {
   height: 100vh;
   height: 100dvh;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
   padding: clamp(28px, 5vw, 56px) clamp(24px, 8vw, 80px);
   overflow: hidden;
 }
@@ -306,8 +306,19 @@ h1 em {
   50% { opacity: 0.8; }
 }
 
+/* ── FOOTER ── */
+footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+  animation: fadein 1s ease 0.3s both;
+}
+
 .footer-note {
-  margin-top: 12px;
   font-size: 11px;
   font-weight: 300;
   color: var(--ink-low);
@@ -328,6 +339,7 @@ h1 em {
   h1 { font-size: 36px; margin-bottom: 14px; }
   .divider { height: 14px; margin-bottom: 14px; }
   .subhead { font-size: 13px; margin-bottom: 24px; }
+  footer { padding-top: 16px; }
   .msg { font-size: 14px; }
   .msg.user { max-width: 85%; }
 }
