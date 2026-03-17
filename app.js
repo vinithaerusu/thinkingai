@@ -1,15 +1,26 @@
 const chat = document.getElementById("chat");
+const hero = document.getElementById("hero");
 const input = document.getElementById("input");
 const send = document.getElementById("send");
 const newChatBtn = document.getElementById("new-chat");
+const inputHint = document.querySelector(".input-hint");
 
 const sessionId = crypto.randomUUID();
 let messages = [];
 let sending = false;
+let inChat = false;
+
+function enterChatMode() {
+  if (inChat) return;
+  inChat = true;
+  hero.classList.add("hidden");
+  chat.classList.remove("hidden");
+  newChatBtn.classList.add("visible");
+  if (inputHint) inputHint.style.display = "none";
+}
 
 function addMsg(role, text) {
-  const welcome = chat.querySelector(".welcome");
-  if (welcome) welcome.remove();
+  enterChatMode();
 
   const div = document.createElement("div");
   div.className = `msg ${role === "user" ? "user" : "ai"}`;
@@ -105,11 +116,12 @@ async function sendMessage() {
 
 function resetChat() {
   messages = [];
-  chat.innerHTML = `
-    <div class="welcome">
-      <h2>Figure anything out</h2>
-      <p>I show you the right examples and let you find the pattern yourself. Just type what you want to understand.</p>
-    </div>`;
+  inChat = false;
+  chat.innerHTML = "";
+  chat.classList.add("hidden");
+  hero.classList.remove("hidden");
+  newChatBtn.classList.remove("visible");
+  if (inputHint) inputHint.style.display = "";
   input.value = "";
   input.style.height = "auto";
   updateSendButton();

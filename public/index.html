@@ -3,35 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aux</title>
+  <title>aux — figure anything out</title>
   <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@200;300;400&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div id="top-bar">
-    <img src="/logo.svg" alt="Aux" class="top-logo">
-    <button id="new-chat" title="New chat" aria-label="New chat">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-    </button>
-  </div>
 
-  <div id="chat">
-    <div class="welcome">
-      <h2>Figure anything out</h2>
-      <p>I show you the right examples and let you find the pattern yourself. Just type what you want to understand.</p>
+<div class="page" id="page">
+
+  <nav>
+    <a class="logo-group" href="/">
+      <span class="logo-mark">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="5"  cy="4"  r="1.5" fill="#B85C2A" opacity="0.3"/>
+          <circle cx="10" cy="4"  r="1.5" fill="#B85C2A" opacity="0.3"/>
+          <circle cx="15" cy="4"  r="1.5" fill="#B85C2A" opacity="0.3"/>
+          <circle cx="21" cy="4"  r="1.5" fill="#B85C2A" opacity="0.3"/>
+          <circle cx="7"  cy="10" r="1.5" fill="#B85C2A" opacity="0.5"/>
+          <circle cx="13" cy="10" r="1.5" fill="#B85C2A" opacity="0.5"/>
+          <circle cx="19" cy="10" r="1.5" fill="#B85C2A" opacity="0.5"/>
+          <circle cx="10" cy="16" r="1.5" fill="#B85C2A" opacity="0.75"/>
+          <circle cx="16" cy="16" r="1.5" fill="#B85C2A" opacity="0.75"/>
+          <circle cx="13" cy="22" r="2.5" fill="#B85C2A"/>
+        </svg>
+      </span>
+      <span class="logo-wordmark">aux</span>
+    </a>
+    <button id="new-chat" title="New chat" aria-label="New chat">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    </button>
+  </nav>
+
+  <main id="main">
+    <div class="hero" id="hero">
+      <h1>Figure <em>anything</em> out</h1>
+      <div class="divider"></div>
+      <p class="subhead">I show you the right examples and let you find the pattern yourself. It sticks better than being told.</p>
     </div>
-  </div>
+
+    <div id="chat" class="chat hidden"></div>
+  </main>
 
   <div id="input-area">
-    <div id="input-wrap">
-      <textarea id="input" rows="1" placeholder="What do you want to figure out?" autofocus></textarea>
+    <div class="input-wrap">
+      <textarea id="input" rows="1" placeholder="What do you want to understand?" autofocus></textarea>
       <button id="send" disabled title="Send" aria-label="Send">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <line x1="3" y1="10" x2="17" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="12,5 17,10 12,15" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
       </button>
     </div>
-    <p class="disclaimer">Conversations are used to improve the experience.</p>
+    <p class="input-hint">press enter to begin</p>
   </div>
 
-  <script src="/app.js"></script>
+</div>
+
+<script src="/app.js"></script>
 </body>
 </html>
