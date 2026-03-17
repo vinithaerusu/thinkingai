@@ -1,22 +1,32 @@
 const chat = document.getElementById("chat");
 const hero = document.getElementById("hero");
-const input = document.getElementById("input");
-const send = document.getElementById("send");
+const chatInputArea = document.getElementById("chat-input");
 const newChatBtn = document.getElementById("new-chat");
-const inputHint = document.querySelector(".input-hint");
+
+// Hero input elements
+const heroInput = document.getElementById("input");
+const heroSend = document.getElementById("send");
+
+// Chat input elements
+const chatInput = document.getElementById("input-chat");
+const chatSend = document.getElementById("send-chat");
 
 const sessionId = crypto.randomUUID();
 let messages = [];
 let sending = false;
 let inChat = false;
 
+function getInput() { return inChat ? chatInput : heroInput; }
+function getSend() { return inChat ? chatSend : heroSend; }
+
 function enterChatMode() {
   if (inChat) return;
   inChat = true;
   hero.classList.add("hidden");
   chat.classList.remove("hidden");
+  chatInputArea.classList.remove("hidden");
   newChatBtn.classList.add("visible");
-  if (inputHint) inputHint.style.display = "none";
+  chatInput.focus();
 }
 
 function addMsg(role, text) {
@@ -64,15 +74,23 @@ function hideTyping() {
 }
 
 function updateSendButton() {
+  const input = getInput();
+  const send = getSend();
   send.disabled = !input.value.trim() || sending;
 }
 
+function updateAllSendButtons() {
+  heroSend.disabled = !heroInput.value.trim() || sending;
+  chatSend.disabled = !chatInput.value.trim() || sending;
+}
+
 async function sendMessage() {
+  const input = getInput();
   const text = input.value.trim();
   if (!text || sending) return;
 
   sending = true;
-  updateSendButton();
+  updateAllSendButtons();
   input.value = "";
   input.style.height = "auto";
 
@@ -94,7 +112,7 @@ async function sendMessage() {
       addMsg("ai", "I'm being rate limited. Wait about 30 seconds and try sending your message again.");
       messages.pop();
       sending = false;
-      updateSendButton();
+      updateAllSendButtons();
       return;
     }
 
@@ -110,8 +128,8 @@ async function sendMessage() {
   }
 
   sending = false;
-  updateSendButton();
-  input.focus();
+  updateAllSendButtons();
+  chatInput.focus();
 }
 
 function resetChat() {
@@ -119,27 +137,43 @@ function resetChat() {
   inChat = false;
   chat.innerHTML = "";
   chat.classList.add("hidden");
+  chatInputArea.classList.add("hidden");
   hero.classList.remove("hidden");
   newChatBtn.classList.remove("visible");
-  if (inputHint) inputHint.style.display = "";
-  input.value = "";
-  input.style.height = "auto";
-  updateSendButton();
-  input.focus();
+  heroInput.value = "";
+  chatInput.value = "";
+  heroInput.style.height = "auto";
+  chatInput.style.height = "auto";
+  updateAllSendButtons();
+  heroInput.focus();
 }
 
-send.addEventListener("click", sendMessage);
-newChatBtn.addEventListener("click", resetChat);
-
-input.addEventListener("keydown", (e) => {
+// Hero input events
+heroSend.addEventListener("click", sendMessage);
+heroInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     sendMessage();
   }
 });
-
-input.addEventListener("input", () => {
-  input.style.height = "auto";
-  input.style.height = Math.min(input.scrollHeight, 160) + "px";
-  updateSendButton();
+heroInput.addEventListener("input", () => {
+  heroInput.style.height = "auto";
+  heroInput.style.height = Math.min(heroInput.scrollHeight, 160) + "px";
+  updateAllSendButtons();
 });
+
+// Chat input events
+chatSend.addEventListener("click", sendMessage);
+chatInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+chatInput.addEventListener("input", () => {
+  chatInput.style.height = "auto";
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 160) + "px";
+  updateAllSendButtons();
+});
+
+newChatBtn.addEventListener("click", resetChat);

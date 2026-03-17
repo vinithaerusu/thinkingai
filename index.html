@@ -42,23 +42,41 @@
       <h1>Figure <em>anything</em> out</h1>
       <div class="divider"></div>
       <p class="subhead">I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
+
+      <div class="input-wrap hero-input">
+        <div style="position:relative;">
+          <textarea id="input" rows="1" placeholder="What do you want to understand?" autofocus></textarea>
+          <button id="send" disabled title="Send" aria-label="Send">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <line x1="3" y1="10" x2="17" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <polyline points="12,5 17,10 12,15" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </button>
+        </div>
+        <p class="input-hint">press enter to begin</p>
+      </div>
     </div>
 
     <div id="chat" class="chat hidden"></div>
+
+    <div id="chat-input" class="chat-input hidden">
+      <div class="input-wrap">
+        <div style="position:relative;">
+          <textarea id="input-chat" rows="1" placeholder="Type your reply..."></textarea>
+          <button id="send-chat" disabled title="Send" aria-label="Send">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <line x1="3" y1="10" x2="17" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <polyline points="12,5 17,10 12,15" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <div id="input-area">
-    <div class="input-wrap">
-      <textarea id="input" rows="1" placeholder="What do you want to understand?" autofocus></textarea>
-      <button id="send" disabled title="Send" aria-label="Send">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <line x1="3" y1="10" x2="17" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-          <polyline points="12,5 17,10 12,15" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        </svg>
-      </button>
-    </div>
-    <p class="input-hint">press enter to begin</p>
-  </div>
+  <footer>
+    <p class="footer-note">Conversations are used to improve the experience</p>
+  </footer>
 
 </div>
 
