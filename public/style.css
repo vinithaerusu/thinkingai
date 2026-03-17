@@ -219,6 +219,12 @@ h1 em {
   margin: 0 auto;
 }
 
+.chat::-webkit-scrollbar { width: 6px; }
+.chat::-webkit-scrollbar-track { background: transparent; }
+.chat::-webkit-scrollbar-thumb { background: rgba(156, 122, 96, 0.25); border-radius: 3px; }
+.chat::-webkit-scrollbar-thumb:hover { background: rgba(156, 122, 96, 0.4); }
+.chat { scrollbar-width: thin; scrollbar-color: rgba(156, 122, 96, 0.25) transparent; }
+
 .chat.hidden { display: none; }
 
 .chat-input {
