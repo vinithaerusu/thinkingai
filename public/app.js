@@ -11,6 +11,9 @@ const heroSend = document.getElementById("send");
 const chatInput = document.getElementById("input-chat");
 const chatSend = document.getElementById("send-chat");
 
+const footer = document.getElementById("footer");
+const chatFooterNote = document.getElementById("chat-footer-note");
+
 const sessionId = crypto.randomUUID();
 let messages = [];
 let sending = false;
@@ -26,6 +29,7 @@ function enterChatMode() {
   chat.classList.remove("hidden");
   chatInputArea.classList.remove("hidden");
   newChatBtn.classList.add("visible");
+  footer.classList.add("hidden");
   chatInput.focus();
 }
 
@@ -140,6 +144,8 @@ function resetChat() {
   chatInputArea.classList.add("hidden");
   hero.classList.remove("hidden");
   newChatBtn.classList.remove("visible");
+  footer.classList.remove("hidden");
+  chatFooterNote.classList.add("hidden");
   heroInput.value = "";
   chatInput.value = "";
   heroInput.style.height = "auto";
@@ -174,6 +180,11 @@ chatInput.addEventListener("input", () => {
   chatInput.style.height = "auto";
   chatInput.style.height = Math.min(chatInput.scrollHeight, 160) + "px";
   updateAllSendButtons();
+  if (chatInput.value.trim()) {
+    chatFooterNote.classList.remove("hidden");
+  } else {
+    chatFooterNote.classList.add("hidden");
+  }
 });
 
 newChatBtn.addEventListener("click", resetChat);
