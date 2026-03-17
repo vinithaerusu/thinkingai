@@ -1,7 +1,6 @@
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 const send = document.getElementById("send");
-const newChatBtn = document.getElementById("new-chat");
 
 const sessionId = crypto.randomUUID();
 let messages = [];
@@ -107,7 +106,7 @@ function resetChat() {
   messages = [];
   chat.innerHTML = `
     <div class="welcome">
-      <h2>Figure anything out</h2>
+      <img src="/logo.svg" alt="Aux" class="welcome-logo">
       <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
     </div>`;
   input.value = "";
@@ -117,7 +116,6 @@ function resetChat() {
 }
 
 send.addEventListener("click", sendMessage);
-newChatBtn.addEventListener("click", resetChat);
 
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
