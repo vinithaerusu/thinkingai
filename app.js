@@ -145,6 +145,7 @@ function resetChat() {
   heroInput.style.height = "auto";
   chatInput.style.height = "auto";
   updateAllSendButtons();
+  document.getElementById("page").style.height = "";
   heroInput.focus();
 }
 
@@ -177,3 +178,14 @@ chatInput.addEventListener("input", () => {
 });
 
 newChatBtn.addEventListener("click", resetChat);
+
+// Mobile keyboard: keep chat scrolled to bottom when keyboard opens/closes
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", () => {
+    if (inChat) {
+      // Adjust page height to visual viewport (accounts for keyboard)
+      document.getElementById("page").style.height = window.visualViewport.height + "px";
+      chat.scrollTop = chat.scrollHeight;
+    }
+  });
+}
