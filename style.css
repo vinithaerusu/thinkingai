@@ -108,8 +108,8 @@ main {
 .hero.hidden { display: none; }
 
 h1 {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-weight: 300;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 200;
   font-size: clamp(36px, 5vw, 64px);
   line-height: 1.08;
   color: var(--ink);
