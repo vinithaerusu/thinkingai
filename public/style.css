@@ -306,6 +306,16 @@ h1 em {
   50% { opacity: 0.8; }
 }
 
+.chat-footer-note {
+  margin-top: 10px;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--ink-low);
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.chat-footer-note.hidden { display: none; }
 
 /* ── ANIMATIONS ── */
 @keyframes fadein {
