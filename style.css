@@ -4,8 +4,8 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  background: #111114;
-  color: #d8d4cf;
+  background: #F2F2F2;
+  color: #2D2830;
   height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -13,6 +13,7 @@ body {
 
 header {
   padding: 16px 24px;
+  background: #4A444D;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -28,7 +29,7 @@ header {
 #new-chat {
   background: none;
   border: none;
-  color: #5a5650;
+  color: #B8B3B8;
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
@@ -39,14 +40,14 @@ header {
 }
 
 #new-chat:hover {
-  color: #9a9590;
+  color: #F2F2F2;
 }
 
 header h1 {
   font-family: 'EB Garamond', Georgia, serif;
   font-size: 20px;
   font-weight: 500;
-  color: #c8c3bc;
+  color: #F2F2F2;
   letter-spacing: 0.02em;
 }
 
@@ -66,14 +67,15 @@ header h1 {
   line-height: 1.75;
   font-size: 15px;
   letter-spacing: 0.01em;
+  color: #2D2830;
 }
 
 .msg.user {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #fff;
+  border: 1px solid #B8B3B8;
   padding: 12px 20px;
   border-radius: 16px;
-  color: #c8c3bc;
+  color: #2D2830;
   width: fit-content;
   max-width: 640px;
   margin-left: auto;
@@ -82,13 +84,13 @@ header h1 {
 
 .msg.ai {
   padding: 0;
-  color: #d8d4cf;
+  color: #2D2830;
 }
 
 .msg.ai p { margin-bottom: 14px; }
 .msg.ai p:last-child { margin-bottom: 0; }
-.msg.ai strong { color: #e8e4df; font-weight: 500; }
-.msg.ai em { color: #8a857e; font-style: italic; }
+.msg.ai strong { color: #2D2830; font-weight: 500; }
+.msg.ai em { color: #4A444D; font-style: italic; }
 
 .msg.ai ol, .msg.ai ul {
   margin: 10px 0;
@@ -101,20 +103,20 @@ header h1 {
 
 .msg.ai hr {
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid #B8B3B8;
   margin: 24px 0;
 }
 
 .msg.ai blockquote {
-  border-left: 2px solid rgba(200, 180, 140, 0.3);
+  border-left: 2px solid #734B5E;
   padding-left: 16px;
-  color: #8a857e;
+  color: #4A444D;
   margin: 12px 0;
   font-style: italic;
 }
 
 .msg.ai code {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(45, 40, 48, 0.06);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 14px;
@@ -125,7 +127,7 @@ header h1 {
   width: 100%;
   margin: 0 auto;
   padding: 0;
-  color: #5a5650;
+  color: #B8B3B8;
   font-size: 14px;
   letter-spacing: 0.03em;
 }
@@ -154,11 +156,11 @@ header h1 {
 
 #input {
   width: 100%;
-  background: #1a1a1e;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #fff;
+  border: 1px solid #B8B3B8;
   border-radius: 16px;
   padding: 14px 52px 14px 20px;
-  color: #d8d4cf;
+  color: #2D2830;
   font-size: 15px;
   font-family: inherit;
   resize: none;
@@ -170,11 +172,11 @@ header h1 {
 }
 
 #input:focus {
-  border-color: rgba(200, 180, 140, 0.25);
+  border-color: #734B5E;
 }
 
 #input::placeholder {
-  color: #4a4640;
+  color: #B8B3B8;
   letter-spacing: 0.01em;
 }
 
@@ -182,8 +184,8 @@ header h1 {
   position: absolute;
   right: 8px;
   bottom: 8px;
-  background: #c8b48a;
-  color: #111114;
+  background: #734B5E;
+  color: #F2F2F2;
   border: none;
   border-radius: 50%;
   width: 34px;
@@ -196,8 +198,8 @@ header h1 {
   transition: opacity 0.2s, background 0.2s;
 }
 
-#send:hover { background: #d4c49a; }
-#send:disabled { opacity: 0.15; cursor: not-allowed; background: #5a5650; }
+#send:hover { background: #5e3c4c; }
+#send:disabled { opacity: 0.2; cursor: not-allowed; background: #B8B3B8; }
 
 .welcome {
   max-width: 460px;
@@ -210,13 +212,13 @@ header h1 {
   font-family: 'EB Garamond', Georgia, serif;
   font-size: 32px;
   font-weight: 400;
-  color: #d8d4cf;
+  color: #2D2830;
   margin-bottom: 18px;
   letter-spacing: 0.01em;
 }
 
 .welcome p {
-  color: #6a655e;
+  color: #4A444D;
   font-size: 15px;
   line-height: 1.8;
 }
@@ -224,7 +226,7 @@ header h1 {
 .disclaimer {
   text-align: center;
   font-size: 11px;
-  color: #3a3630;
+  color: #B8B3B8;
   margin-top: 12px;
   letter-spacing: 0.02em;
 }
