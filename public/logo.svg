@@ -1,0 +1,5 @@
+<svg width="100%" viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg"><defs><mask id="imagine-text-gaps-91i3v8" maskUnits="userSpaceOnUse"><rect x="0" y="0" width="680" height="260" fill="white"/><rect x="185.7047882080078" y="37.469730377197266" width="305.6275329589844" height="172.11419677734375" fill="black" rx="2"/></mask></defs>
+
+  <text x="340" y="175" text-anchor="middle" dominant-baseline="auto" style="fill:rgb(115, 75, 94);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Cormorant Garamond&quot;, Georgia, &quot;Times New Roman&quot;, serif;font-size:148px;font-weight:300;text-anchor:middle;dominant-baseline:auto">Aux</text>
+  <line x1="220" y1="200" x2="460" y2="200" mask="url(#imagine-text-gaps-91i3v8)" style="fill:rgb(0, 0, 0);stroke:rgb(115, 75, 94);color:rgb(0, 0, 0);stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.5;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+</svg>
