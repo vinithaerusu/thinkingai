@@ -210,7 +210,7 @@ h1 em {
   flex: 1;
   overflow-y: auto;
   scroll-behavior: smooth;
-  padding: 24px 0;
+  padding: 24px 16px 24px 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
