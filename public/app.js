@@ -1,6 +1,7 @@
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 const send = document.getElementById("send");
+const newChatBtn = document.getElementById("new-chat");
 
 const sessionId = crypto.randomUUID();
 let messages = [];
@@ -51,12 +52,16 @@ function hideTyping() {
   if (el) el.remove();
 }
 
+function updateSendButton() {
+  send.disabled = !input.value.trim() || sending;
+}
+
 async function sendMessage() {
   const text = input.value.trim();
   if (!text || sending) return;
 
   sending = true;
-  send.disabled = true;
+  updateSendButton();
   input.value = "";
   input.style.height = "auto";
 
@@ -78,7 +83,7 @@ async function sendMessage() {
       addMsg("ai", "I'm being rate limited. Wait about 30 seconds and try sending your message again.");
       messages.pop();
       sending = false;
-      send.disabled = false;
+      updateSendButton();
       return;
     }
 
@@ -94,11 +99,25 @@ async function sendMessage() {
   }
 
   sending = false;
-  send.disabled = false;
+  updateSendButton();
+  input.focus();
+}
+
+function resetChat() {
+  messages = [];
+  chat.innerHTML = `
+    <div class="welcome">
+      <h2>Figure anything out</h2>
+      <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
+    </div>`;
+  input.value = "";
+  input.style.height = "auto";
+  updateSendButton();
   input.focus();
 }
 
 send.addEventListener("click", sendMessage);
+newChatBtn.addEventListener("click", resetChat);
 
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
@@ -109,5 +128,6 @@ input.addEventListener("keydown", (e) => {
 
 input.addEventListener("input", () => {
   input.style.height = "auto";
-  input.style.height = Math.min(input.scrollHeight, 120) + "px";
+  input.style.height = Math.min(input.scrollHeight, 160) + "px";
+  updateSendButton();
 });

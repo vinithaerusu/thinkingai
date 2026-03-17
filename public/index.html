@@ -8,8 +8,12 @@
 </head>
 <body>
   <header>
-    <h1>Aux</h1>
-    <span class="tag">figure things out</span>
+    <div class="header-left">
+      <button id="new-chat" title="New chat" aria-label="New chat">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </button>
+      <h1>Aux</h1>
+    </div>
   </header>
 
   <div id="chat">
@@ -22,11 +26,12 @@
   <div id="input-area">
     <div id="input-wrap">
       <textarea id="input" rows="1" placeholder="What do you want to figure out?" autofocus></textarea>
-      <button id="send">Send</button>
+      <button id="send" disabled title="Send" aria-label="Send">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+      </button>
     </div>
+    <p class="disclaimer">Conversations are used to improve the experience. No personal data is collected.</p>
   </div>
-
-  <p class="disclaimer">Conversations are used to improve the experience. No personal data is collected.</p>
 
   <script src="/app.js"></script>
 </body>
