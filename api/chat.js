@@ -90,12 +90,16 @@ module.exports = async function handler(req, res) {
 
     if (supabase && sessionId) {
       const userMsg = messages[messages.length - 1]?.content || '';
-      supabase.from('chat_logs').insert({
-        session_id: sessionId,
-        user_message: userMsg,
-        ai_response: reply,
-        created_at: new Date().toISOString()
-      }).then(() => {}).catch(err => console.error('Supabase log error:', err));
+      try {
+        await supabase.from('chat_logs').insert({
+          session_id: sessionId,
+          user_message: userMsg,
+          ai_response: reply,
+          created_at: new Date().toISOString()
+        });
+      } catch (logErr) {
+        console.error('Supabase log error:', logErr);
+      }
     }
 
     res.json({ reply });
