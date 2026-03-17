@@ -208,13 +208,9 @@ header h1 {
   padding: 60px 20px;
 }
 
-.welcome h2 {
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 32px;
-  font-weight: 400;
-  color: #2D2830;
+.welcome-logo {
+  max-width: 240px;
   margin-bottom: 18px;
-  letter-spacing: 0.01em;
 }
 
 .welcome p {
