@@ -340,6 +340,8 @@ h1 em {
 
 .hero-notice.hidden { display: none; }
 
+.mobile-br { display: none; }
+
 /* ── ANIMATIONS ── */
 @keyframes fadein {
   from { opacity: 0; transform: translateY(12px); }
@@ -361,4 +363,5 @@ h1 em {
   .subhead { font-size: 13px; margin-bottom: 24px; }
   .msg { font-size: 14px; }
   .msg.user { max-width: 85%; }
+  .mobile-br { display: inline; }
 }
