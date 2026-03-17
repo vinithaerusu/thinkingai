@@ -11,6 +11,15 @@ body {
   flex-direction: column;
 }
 
+#top-bar {
+  padding: 16px 24px;
+  flex-shrink: 0;
+}
+
+.top-logo {
+  height: 28px;
+}
+
 #chat {
   flex: 1;
   overflow-y: auto;
@@ -167,9 +176,12 @@ body {
   padding: 60px 20px;
 }
 
-.welcome-logo {
-  height: 80px;
-  margin-bottom: 28px;
+.welcome h2 {
+  font-size: 28px;
+  font-weight: 300;
+  color: #1C1917;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
 }
 
 .welcome p {

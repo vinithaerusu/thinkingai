@@ -106,7 +106,7 @@ function resetChat() {
   messages = [];
   chat.innerHTML = `
     <div class="welcome">
-      <img src="/logo.svg" alt="Aux" class="welcome-logo">
+      <h2>Figure anything out</h2>
       <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
     </div>`;
   input.value = "";
