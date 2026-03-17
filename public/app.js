@@ -2,6 +2,7 @@ const chat = document.getElementById("chat");
 const hero = document.getElementById("hero");
 const chatInputArea = document.getElementById("chat-input");
 const newChatBtn = document.getElementById("new-chat");
+const heroNotice = document.getElementById("hero-notice");
 
 // Hero input elements
 const heroInput = document.getElementById("input");
@@ -26,6 +27,7 @@ function enterChatMode() {
   chat.classList.remove("hidden");
   chatInputArea.classList.remove("hidden");
   newChatBtn.classList.add("visible");
+  heroNotice.classList.add("hidden");
   chatInput.focus();
 }
 
@@ -140,6 +142,7 @@ function resetChat() {
   chatInputArea.classList.add("hidden");
   hero.classList.remove("hidden");
   newChatBtn.classList.remove("visible");
+  heroNotice.classList.remove("hidden");
   heroInput.value = "";
   chatInput.value = "";
   heroInput.style.height = "auto";

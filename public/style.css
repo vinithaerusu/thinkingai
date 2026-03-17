@@ -310,6 +310,21 @@ h1 em {
 }
 
 
+/* ── HERO NOTICE ── */
+.hero-notice {
+  position: absolute;
+  bottom: clamp(16px, 3vw, 32px);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--ink-low);
+  letter-spacing: 0.04em;
+}
+
+.hero-notice.hidden { display: none; }
+
 /* ── ANIMATIONS ── */
 @keyframes fadein {
   from { opacity: 0; transform: translateY(12px); }
