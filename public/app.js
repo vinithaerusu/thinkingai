@@ -10,8 +10,6 @@ const heroSend = document.getElementById("send");
 // Chat input elements
 const chatInput = document.getElementById("input-chat");
 const chatSend = document.getElementById("send-chat");
-const chatFooterNote = document.getElementById("chat-footer-note");
-const footer = document.getElementById("footer");
 
 const sessionId = crypto.randomUUID();
 let messages = [];
@@ -28,8 +26,6 @@ function enterChatMode() {
   chat.classList.remove("hidden");
   chatInputArea.classList.remove("hidden");
   newChatBtn.classList.add("visible");
-  footer.classList.add("hidden");
-  chatFooterNote.classList.remove("hidden");
   chatInput.focus();
 }
 
@@ -144,8 +140,6 @@ function resetChat() {
   chatInputArea.classList.add("hidden");
   hero.classList.remove("hidden");
   newChatBtn.classList.remove("visible");
-  footer.classList.remove("hidden");
-  chatFooterNote.classList.add("hidden");
   heroInput.value = "";
   chatInput.value = "";
   heroInput.style.height = "auto";

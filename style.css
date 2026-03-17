@@ -27,7 +27,7 @@ html, body {
   height: 100vh;
   height: 100dvh;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr;
   padding: clamp(28px, 5vw, 56px) clamp(24px, 8vw, 80px);
   overflow: hidden;
 }
@@ -306,36 +306,6 @@ h1 em {
   50% { opacity: 0.8; }
 }
 
-/* ── FOOTER ── */
-footer {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 16px;
-}
-
-footer.hidden { display: none; }
-
-.footer-note {
-  font-size: 11px;
-  font-weight: 300;
-  color: var(--ink-low);
-  letter-spacing: 0.08em;
-  text-align: center;
-}
-
-.chat-footer-note {
-  margin-top: 10px;
-  font-size: 11px;
-  font-weight: 300;
-  color: var(--ink-low);
-  letter-spacing: 0.08em;
-  text-align: center;
-}
-
-.chat-footer-note.hidden { display: none; }
 
 /* ── ANIMATIONS ── */
 @keyframes fadein {
