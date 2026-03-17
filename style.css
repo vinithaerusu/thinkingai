@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  background: #F2F2F2;
-  color: #2D2830;
+  font-family: 'Sora', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: #FAFAF8;
+  color: #1C1917;
   height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -17,40 +17,40 @@ body {
   padding: 32px 24px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
 }
 
 .msg {
   max-width: 640px;
   width: 100%;
   margin: 0 auto;
-  line-height: 1.75;
+  line-height: 1.8;
   font-size: 15px;
-  letter-spacing: 0.01em;
-  color: #2D2830;
+  color: #1C1917;
 }
 
 .msg.user {
-  background: #fff;
-  border: 1px solid #B8B3B8;
+  background: #F5F0EB;
+  border: none;
   padding: 12px 20px;
-  border-radius: 16px;
-  color: #2D2830;
+  border-radius: 20px 20px 4px 20px;
+  color: #1C1917;
   width: fit-content;
   max-width: 640px;
   margin-left: auto;
   margin-right: 0;
+  font-weight: 400;
 }
 
 .msg.ai {
   padding: 0;
-  color: #2D2830;
+  color: #292524;
 }
 
 .msg.ai p { margin-bottom: 14px; }
 .msg.ai p:last-child { margin-bottom: 0; }
-.msg.ai strong { color: #2D2830; font-weight: 500; }
-.msg.ai em { color: #4A444D; font-style: italic; }
+.msg.ai strong { color: #1C1917; font-weight: 500; }
+.msg.ai em { color: #78716C; font-style: italic; }
 
 .msg.ai ol, .msg.ai ul {
   margin: 10px 0;
@@ -63,22 +63,22 @@ body {
 
 .msg.ai hr {
   border: none;
-  border-top: 1px solid #B8B3B8;
+  border-top: 1px solid #E7E5E4;
   margin: 24px 0;
 }
 
 .msg.ai blockquote {
-  border-left: 2px solid #734B5E;
+  border-left: 2px solid #C2713A;
   padding-left: 16px;
-  color: #4A444D;
+  color: #78716C;
   margin: 12px 0;
   font-style: italic;
 }
 
 .msg.ai code {
-  background: rgba(45, 40, 48, 0.06);
+  background: rgba(28, 25, 23, 0.05);
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 14px;
 }
 
@@ -87,9 +87,9 @@ body {
   width: 100%;
   margin: 0 auto;
   padding: 0;
-  color: #B8B3B8;
+  color: #A8A29E;
   font-size: 14px;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
 
 .typing span {
@@ -102,7 +102,7 @@ body {
 }
 
 #input-area {
-  padding: 0 24px 20px;
+  padding: 0 24px 24px;
   flex-shrink: 0;
 }
 
@@ -117,35 +117,34 @@ body {
 #input {
   width: 100%;
   background: #fff;
-  border: 1px solid #B8B3B8;
+  border: 1.5px solid #E7E5E4;
   border-radius: 16px;
   padding: 14px 52px 14px 20px;
-  color: #2D2830;
+  color: #1C1917;
   font-size: 15px;
   font-family: inherit;
   resize: none;
   max-height: 160px;
   line-height: 1.5;
   outline: none;
-  transition: border-color 0.3s;
-  letter-spacing: 0.01em;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 #input:focus {
-  border-color: #734B5E;
+  border-color: #C2713A;
+  box-shadow: 0 0 0 3px rgba(194, 113, 58, 0.1);
 }
 
 #input::placeholder {
-  color: #B8B3B8;
-  letter-spacing: 0.01em;
+  color: #A8A29E;
 }
 
 #send {
   position: absolute;
   right: 8px;
   bottom: 8px;
-  background: #734B5E;
-  color: #F2F2F2;
+  background: #C2713A;
+  color: #fff;
   border: none;
   border-radius: 50%;
   width: 34px;
@@ -158,39 +157,39 @@ body {
   transition: opacity 0.2s, background 0.2s;
 }
 
-#send:hover { background: #5e3c4c; }
-#send:disabled { opacity: 0.2; cursor: not-allowed; background: #B8B3B8; }
+#send:hover { background: #A85E30; }
+#send:disabled { opacity: 0.15; cursor: not-allowed; background: #A8A29E; }
 
 .welcome {
-  max-width: 460px;
+  max-width: 420px;
   margin: auto;
   text-align: center;
   padding: 60px 20px;
 }
 
 .welcome-logo {
-  max-width: 240px;
-  margin-bottom: 18px;
+  height: 48px;
+  margin-bottom: 24px;
 }
 
 .welcome p {
-  color: #4A444D;
+  color: #78716C;
   font-size: 15px;
   line-height: 1.8;
+  font-weight: 300;
 }
 
 .disclaimer {
   text-align: center;
   font-size: 11px;
-  color: #B8B3B8;
+  color: #A8A29E;
   margin-top: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 @media (max-width: 600px) {
-  #chat { padding: 20px 18px; gap: 24px; }
+  #chat { padding: 20px 18px; gap: 20px; }
   #input-area { padding: 0 18px 16px; }
   .msg { font-size: 14px; }
   .welcome { padding: 40px 16px; }
-  .welcome h2 { font-size: 26px; }
 }
