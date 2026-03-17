@@ -1,5 +1,5 @@
 <svg width="100%" viewBox="0 0 160 80" xmlns="http://www.w3.org/2000/svg">
   <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600&amp;display=swap');</style>
   <text x="4" y="58" text-anchor="start" style="font-family:'Sora',sans-serif;font-size:56px;font-weight:600;fill:#1C1917;letter-spacing:-1px">aux</text>
-  <circle cx="120" cy="18" r="4.5" fill="#C2713A"/>
+  <circle cx="120" cy="18" r="4.5" fill="#db7c26"/>
 </svg>

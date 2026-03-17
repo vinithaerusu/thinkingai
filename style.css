@@ -38,7 +38,7 @@ body {
 }
 
 #new-chat:hover {
-  color: #1C1917;
+  color: #780116;
   background: #F0EEEC;
 }
 
@@ -62,7 +62,7 @@ body {
 }
 
 .msg.user {
-  background: #F0EEEC;
+  background: #fef3e2;
   border: none;
   padding: 12px 20px;
   border-radius: 20px 20px 4px 20px;
@@ -81,7 +81,7 @@ body {
 
 .msg.ai p { margin-bottom: 14px; }
 .msg.ai p:last-child { margin-bottom: 0; }
-.msg.ai strong { color: #1C1917; font-weight: 500; }
+.msg.ai strong { color: #780116; font-weight: 500; }
 .msg.ai em { color: #78716C; font-style: italic; }
 
 .msg.ai ol, .msg.ai ul {
@@ -100,7 +100,7 @@ body {
 }
 
 .msg.ai blockquote {
-  border-left: 2px solid #C2713A;
+  border-left: 2px solid #db7c26;
   padding-left: 16px;
   color: #78716C;
   margin: 12px 0;
@@ -119,7 +119,7 @@ body {
   width: 100%;
   margin: 0 auto;
   padding: 0;
-  color: #A8A29E;
+  color: #d8572a;
   font-size: 14px;
   letter-spacing: 0.02em;
 }
@@ -165,8 +165,8 @@ body {
 }
 
 #input:focus {
-  border-color: #C2713A;
-  box-shadow: 0 0 0 3px rgba(194, 113, 58, 0.08);
+  border-color: #db7c26;
+  box-shadow: 0 0 0 3px rgba(219, 124, 38, 0.1);
 }
 
 #input::placeholder {
@@ -177,7 +177,7 @@ body {
   position: absolute;
   right: 8px;
   bottom: 8px;
-  background: #C2713A;
+  background: #db7c26;
   color: #fff;
   border: none;
   border-radius: 50%;
@@ -191,7 +191,7 @@ body {
   transition: opacity 0.2s, background 0.2s;
 }
 
-#send:hover { background: #A85E30; }
+#send:hover { background: #d8572a; }
 #send:disabled { opacity: 0.15; cursor: not-allowed; background: #A8A29E; }
 
 .welcome {
@@ -204,7 +204,7 @@ body {
 .welcome h2 {
   font-size: 32px;
   font-weight: 400;
-  color: #1C1917;
+  color: #780116;
   margin-bottom: 14px;
   letter-spacing: -0.5px;
 }
