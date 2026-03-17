@@ -214,7 +214,7 @@ h1 em {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 640px;
+  max-width: 656px;
   width: 100%;
   margin: 0 auto;
 }
