@@ -101,7 +101,7 @@ main {
   justify-content: center;
   text-align: center;
   flex: 1;
-  padding: clamp(48px, 10vh, 100px) 0 clamp(40px, 8vh, 80px);
+  padding: clamp(16px, 4vh, 48px) 0 clamp(16px, 3vh, 40px);
   animation: fadein 1s ease 0.1s both;
 }
 
@@ -110,11 +110,11 @@ main {
 h1 {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-weight: 300;
-  font-size: clamp(44px, 8vw, 88px);
+  font-size: clamp(36px, 5vw, 64px);
   line-height: 1.08;
   color: var(--ink);
   letter-spacing: -0.01em;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   max-width: 14ch;
 }
 
