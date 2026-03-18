@@ -162,6 +162,7 @@ heroInput.addEventListener("keydown", (e) => {
 heroInput.addEventListener("input", () => {
   heroInput.style.height = "auto";
   heroInput.style.height = Math.min(heroInput.scrollHeight, 160) + "px";
+  heroInput.classList.toggle("has-overflow", heroInput.scrollHeight > 160);
   updateAllSendButtons();
 });
 
@@ -176,6 +177,7 @@ chatInput.addEventListener("keydown", (e) => {
 chatInput.addEventListener("input", () => {
   chatInput.style.height = "auto";
   chatInput.style.height = Math.min(chatInput.scrollHeight, 160) + "px";
+  chatInput.classList.toggle("has-overflow", chatInput.scrollHeight > 160);
   updateAllSendButtons();
 });
 

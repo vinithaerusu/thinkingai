@@ -193,6 +193,11 @@ h1 em {
   resize: none;
   max-height: 160px;
   line-height: 1.5;
+  overflow: hidden;
+}
+
+.input-wrap textarea.has-overflow {
+  overflow-y: auto;
 }
 
 .input-wrap textarea::placeholder {
