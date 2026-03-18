@@ -95,11 +95,12 @@ async function sendMessage() {
   updateAllSendButtons();
   input.value = "";
   input.style.height = "auto";
-  input.blur();
-  document.body.focus();
 
   addMsg("user", text);
   messages.push({ role: "user", content: text });
+
+  // Dismiss mobile keyboard after DOM updates settle
+  setTimeout(() => { input.blur(); document.activeElement?.blur(); }, 50);
 
   showTyping();
 
