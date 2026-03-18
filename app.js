@@ -20,19 +20,6 @@ let inChat = false;
 function getInput() { return inChat ? chatInput : heroInput; }
 function getSend() { return inChat ? chatSend : heroSend; }
 
-function dismissKeyboard() {
-  // Blur all textareas and set them readonly to force Android keyboard closed
-  heroInput.setAttribute("readonly", "readonly");
-  chatInput.setAttribute("readonly", "readonly");
-  heroInput.blur();
-  chatInput.blur();
-  if (document.activeElement) document.activeElement.blur();
-  setTimeout(() => {
-    heroInput.removeAttribute("readonly");
-    chatInput.removeAttribute("readonly");
-  }, 150);
-}
-
 function enterChatMode() {
   if (inChat) return;
   inChat = true;
@@ -112,8 +99,10 @@ async function sendMessage() {
   addMsg("user", text);
   messages.push({ role: "user", content: text });
 
-  // Dismiss mobile keyboard on Android
-  dismissKeyboard();
+  // Dismiss mobile keyboard (readonly trick works on Android)
+  input.setAttribute("readonly", "readonly");
+  input.blur();
+  setTimeout(() => input.removeAttribute("readonly"), 100);
 
   showTyping();
 
