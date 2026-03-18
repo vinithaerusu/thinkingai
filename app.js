@@ -95,6 +95,7 @@ async function sendMessage() {
   updateAllSendButtons();
   input.value = "";
   input.style.height = "auto";
+  input.blur();
 
   addMsg("user", text);
   messages.push({ role: "user", content: text });
@@ -131,7 +132,6 @@ async function sendMessage() {
 
   sending = false;
   updateAllSendButtons();
-  chatInput.focus();
 }
 
 function resetChat() {
@@ -181,9 +181,26 @@ chatInput.addEventListener("input", () => {
   updateAllSendButtons();
 });
 
+const modalOverlay = document.getElementById("modal-overlay");
+const modalCancel = document.getElementById("modal-cancel");
+const modalConfirm = document.getElementById("modal-confirm");
+
 newChatBtn.addEventListener("click", () => {
-  if (messages.length > 0 && !confirm("Start a new conversation? Your current chat will be lost.")) return;
+  if (messages.length === 0) { resetChat(); return; }
+  modalOverlay.classList.remove("hidden");
+});
+
+modalCancel.addEventListener("click", () => {
+  modalOverlay.classList.add("hidden");
+});
+
+modalConfirm.addEventListener("click", () => {
+  modalOverlay.classList.add("hidden");
   resetChat();
+});
+
+modalOverlay.addEventListener("click", (e) => {
+  if (e.target === modalOverlay) modalOverlay.classList.add("hidden");
 });
 
 // Mobile keyboard: resize page to visual viewport so chat stays visible

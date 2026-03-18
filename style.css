@@ -356,6 +356,70 @@ h1 em {
   50% { opacity: 0.8; }
 }
 
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 15, 6, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadein-fast 0.15s ease both;
+}
+
+.modal-overlay.hidden { display: none; }
+
+.modal {
+  background: var(--paper);
+  border-radius: 14px;
+  padding: 28px 32px 24px;
+  max-width: 340px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(28, 15, 6, 0.12);
+}
+
+.modal-text {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-btn {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.modal-btn:hover { opacity: 0.85; }
+
+.modal-btn-cancel {
+  background: var(--sand);
+  color: var(--ink-mid);
+}
+
+.modal-btn-confirm {
+  background: var(--terra);
+  color: #fff;
+}
+
+@keyframes fadein-fast {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
 /* ── HERO NOTICE ── */
 .hero-notice {
