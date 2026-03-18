@@ -87,6 +87,33 @@ nav {
   color: var(--terra);
 }
 
+#new-chat[data-tooltip] {
+  position: relative;
+}
+
+#new-chat[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  padding: 6px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+#new-chat[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
 /* ── HERO (welcome state) ── */
 main {
   position: relative;
