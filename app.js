@@ -28,7 +28,7 @@ function enterChatMode() {
   chatInputArea.classList.remove("hidden");
   newChatBtn.classList.add("visible");
   heroNotice.classList.add("hidden");
-  chatInput.focus();
+  if (!sending) chatInput.focus();
 }
 
 function addMsg(role, text) {
