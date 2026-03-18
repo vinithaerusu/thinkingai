@@ -179,7 +179,10 @@ chatInput.addEventListener("input", () => {
   updateAllSendButtons();
 });
 
-newChatBtn.addEventListener("click", resetChat);
+newChatBtn.addEventListener("click", () => {
+  if (messages.length > 0 && !confirm("Start a new conversation? Your current chat will be lost.")) return;
+  resetChat();
+});
 
 // Mobile keyboard: resize page to visual viewport so chat stays visible
 const page = document.getElementById("page");
