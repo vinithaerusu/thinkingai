@@ -201,3 +201,9 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener("scroll", updatePageHeight);
 }
 updatePageHeight();
+
+window.addEventListener("beforeunload", (e) => {
+  if (messages.length > 0) {
+    e.preventDefault();
+  }
+});
