@@ -96,6 +96,7 @@ async function sendMessage() {
   input.value = "";
   input.style.height = "auto";
   input.blur();
+  document.body.focus();
 
   addMsg("user", text);
   messages.push({ role: "user", content: text });
