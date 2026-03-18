@@ -364,4 +364,6 @@ h1 em {
   .msg { font-size: 14px; }
   .msg.user { max-width: 85%; }
   .mobile-br { display: inline; }
+  .input-hint { margin-bottom: 36px; }
+  .hero-notice { font-size: 10px; line-height: 1.6; }
 }
