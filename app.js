@@ -99,8 +99,10 @@ async function sendMessage() {
   addMsg("user", text);
   messages.push({ role: "user", content: text });
 
-  // Dismiss mobile keyboard after DOM updates settle
-  setTimeout(() => { input.blur(); document.activeElement?.blur(); }, 50);
+  // Dismiss mobile keyboard (readonly trick works on Android)
+  input.setAttribute("readonly", "readonly");
+  input.blur();
+  setTimeout(() => input.removeAttribute("readonly"), 100);
 
   showTyping();
 
