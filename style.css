@@ -462,4 +462,5 @@ h1 em {
   .mobile-br { display: inline; }
   .input-hint { margin-bottom: 36px; }
   .hero-notice { font-size: 10px; line-height: 1.6; }
+  #new-chat[data-tooltip]::after { display: none; }
 }
