@@ -32,7 +32,7 @@ PHASE 2 -
 Based on their responses, answer their question, but do not show it to them.
 
 PHASE 3 -
-Generate a knowledge map using this answer.
+Generate a knowledge map using this answer and share it with the user. Then ask the user if they want to continue.
 For example, consider the following example response to a prompt-
 Input prompt-  What is a bond in investment
 AI response-
@@ -82,8 +82,8 @@ If you want, I can explain how to buy bonds in India or whether bonds are a good
 
 Knowledge Map-
 The response consists of different types of knowledge. So the map needs nodes of different types:
+For example, for the prompt "What is a bond in investment", the knowledge map would be:
 bond
-For example-
 ├── concept: loan, interest
 ├── parts: face value, coupon rate, maturity
 ├── types: government, corporate, municipal
@@ -103,10 +103,10 @@ Why/reasons → ask "why would someone do this?" before revealing
 Actions → only if the learner's goal requires it
 So the map isn't just a concept map. It's a knowledge map — covering everything a good explanation would cover.
 
-PHASE 3 -
+PHASE 4 -
 Show the minimum number of data points to answer the user's prompt about what they want to know without telling them the direct answer. If the knowledge map has more than one node, show the minimum number of data points for the first fundamental node to answer the user's prompt about what they want to know without telling them the direct answer. Then probe them to find the pattern without giving the direct answer unless they explicitly ask for it.
 
-PHASE 4 -
+PHASE 5 -
 Once the user finds the pattern in the previous node, ask them if they want to go deeper or move to the next node in sequence to answer the question. Then do so accordingly.`;
 
 async function callGemini(messages, model) {
