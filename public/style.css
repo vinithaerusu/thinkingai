@@ -33,6 +33,12 @@ header .tag {
   border: 1px solid #333;
 }
 
+#main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
 #chat {
   flex: 1;
   overflow-y: auto;
@@ -183,6 +189,186 @@ header .tag {
   font-size: 11px;
   color: #555;
   padding: 0 20px 12px;
+}
+
+/* Knowledge Map Panel */
+#map-panel {
+  width: 320px;
+  flex-shrink: 0;
+  border-left: 1px solid #222;
+  background: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#map-panel.hidden {
+  display: none;
+}
+
+#map-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#map-close {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+#map-close:hover { color: #fff; }
+
+#map-container {
+  flex: 1;
+  overflow: auto;
+  padding: 20px 12px;
+  display: flex;
+  justify-content: center;
+}
+
+#map-svg {
+  width: 100%;
+  min-height: 200px;
+}
+
+#map-toggle {
+  position: fixed;
+  right: 20px;
+  top: 14px;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  color: #c5c5ff;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 10;
+  transition: opacity 0.2s;
+}
+
+#map-toggle:hover { opacity: 0.85; }
+
+#map-toggle.hidden {
+  display: none;
+}
+
+/* SVG node styles */
+.map-node rect {
+  rx: 8;
+  ry: 8;
+  transition: fill 0.4s ease, stroke 0.4s ease;
+}
+
+.map-node text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 11px;
+  fill: #999;
+  text-anchor: middle;
+  dominant-baseline: central;
+  transition: fill 0.4s ease;
+}
+
+.map-node.root rect {
+  fill: #1a1a2e;
+  stroke: #3a3a6a;
+  stroke-width: 2;
+}
+
+.map-node.root text {
+  fill: #c5c5ff;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.map-node.pending rect {
+  fill: #151515;
+  stroke: #2a2a2a;
+  stroke-width: 1.5;
+}
+
+.map-node.pending text {
+  fill: #555;
+}
+
+.map-node.active rect {
+  fill: #1a1a2e;
+  stroke: #5a5aff;
+  stroke-width: 2;
+  animation: nodeGlow 2s ease-in-out infinite;
+}
+
+.map-node.active text {
+  fill: #c5c5ff;
+  font-weight: 500;
+}
+
+@keyframes nodeGlow {
+  0%, 100% { stroke-opacity: 0.6; }
+  50% { stroke-opacity: 1; }
+}
+
+.map-node.completed rect {
+  fill: #0d1f0d;
+  stroke: #2a6a2a;
+  stroke-width: 2;
+}
+
+.map-node.completed text {
+  fill: #6fbf6f;
+  font-weight: 500;
+}
+
+.map-line {
+  stroke: #2a2a2a;
+  stroke-width: 1.5;
+  fill: none;
+  transition: stroke 0.4s ease;
+}
+
+.map-line.active {
+  stroke: #3a3a6a;
+}
+
+.map-line.completed {
+  stroke: #2a5a2a;
+}
+
+.map-node-type {
+  font-size: 9px;
+  fill: #444;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+@media (max-width: 768px) {
+  #map-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    z-index: 20;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+  }
+
+  #map-toggle {
+    right: 12px;
+    top: 12px;
+  }
 }
 
 @media (max-width: 600px) {

@@ -12,12 +12,26 @@
     <span class="tag">figure things out</span>
   </header>
 
-  <div id="chat">
-    <div class="welcome">
-      <h2>Figure anything out</h2>
-      <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
+  <div id="main">
+    <div id="chat">
+      <div class="welcome">
+        <h2>Figure anything out</h2>
+        <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
+      </div>
+    </div>
+
+    <div id="map-panel" class="hidden">
+      <div id="map-header">
+        <span>Knowledge Map</span>
+        <button id="map-close">&times;</button>
+      </div>
+      <div id="map-container">
+        <svg id="map-svg"></svg>
+      </div>
     </div>
   </div>
+
+  <button id="map-toggle" class="hidden">Map</button>
 
   <div id="input-area">
     <div id="input-wrap">
