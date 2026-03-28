@@ -47,6 +47,24 @@
       <input id="sidebar-search-input" type="text" placeholder="Search conversations..." />
     </div>
     <div id="sidebar-list"></div>
+    <div id="sidebar-footer">
+      <button id="my-knowledge-btn" title="View all learned concepts">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        My Knowledge
+      </button>
+    </div>
+  </div>
+
+  <!-- My Knowledge overlay -->
+  <div id="knowledge-overlay" class="hidden">
+    <div id="knowledge-overlay-header">
+      <span>My Knowledge</span>
+      <button id="knowledge-overlay-close">&times;</button>
+    </div>
+    <div id="knowledge-overlay-content"></div>
   </div>
 
   <div id="main">

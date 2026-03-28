@@ -379,35 +379,35 @@ function addMsg(role, text, isReplay) {
       });
     }
 
-    // Add feedback buttons
-    const feedbackDiv = document.createElement("div");
-    feedbackDiv.className = "msg-feedback";
+    // Add actionable feedback buttons
+    if (!isReplay) {
+      const feedbackDiv = document.createElement("div");
+      feedbackDiv.className = "msg-feedback";
 
-    const thumbUp = document.createElement("button");
-    thumbUp.className = "feedback-btn";
-    thumbUp.innerHTML = "&#x1F44D;";
-    thumbUp.title = "Helpful";
+      const understandBtn = document.createElement("button");
+      understandBtn.className = "feedback-btn feedback-understand";
+      understandBtn.textContent = "I understand";
 
-    const thumbDown = document.createElement("button");
-    thumbDown.className = "feedback-btn";
-    thumbDown.innerHTML = "&#x1F44E;";
-    thumbDown.title = "Not helpful";
+      const explainBtn = document.createElement("button");
+      explainBtn.className = "feedback-btn feedback-explain";
+      explainBtn.textContent = "Explain differently";
 
-    thumbUp.addEventListener("click", () => {
-      thumbUp.classList.toggle("selected");
-      thumbDown.classList.remove("selected");
-      feedbackDiv.classList.add("voted");
-    });
+      understandBtn.addEventListener("click", () => {
+        feedbackDiv.remove();
+        input.value = "I understand this. Let's move on.";
+        sendMessage();
+      });
 
-    thumbDown.addEventListener("click", () => {
-      thumbDown.classList.toggle("selected");
-      thumbUp.classList.remove("selected");
-      feedbackDiv.classList.add("voted");
-    });
+      explainBtn.addEventListener("click", () => {
+        feedbackDiv.remove();
+        input.value = "I don't quite get this. Can you explain it differently?";
+        sendMessage();
+      });
 
-    feedbackDiv.appendChild(thumbUp);
-    feedbackDiv.appendChild(thumbDown);
-    div.appendChild(feedbackDiv);
+      feedbackDiv.appendChild(understandBtn);
+      feedbackDiv.appendChild(explainBtn);
+      div.appendChild(feedbackDiv);
+    }
   }
 
   chat.appendChild(div);
@@ -545,6 +545,16 @@ function completeNode(name) {
       nodeStates[n.type] = 'completed';
     }
   });
+
+  // Mark next pending node as suggested
+  Object.keys(nodeStates).forEach(k => {
+    if (nodeStates[k] === 'suggested') nodeStates[k] = 'pending';
+  });
+  const nextPending = knowledgeMap.nodes.find(n => nodeStates[n.type] === 'pending');
+  if (nextPending) {
+    nodeStates[nextPending.type] = 'suggested';
+  }
+
   renderMap();
 }
 
@@ -636,7 +646,7 @@ function renderMap() {
 
     const state = nodeStates[node.type] || 'pending';
 
-    const lineClass = state === 'completed' ? 'map-line completed' : state === 'active' ? 'map-line active' : 'map-line';
+    const lineClass = state === 'completed' ? 'map-line completed' : state === 'active' ? 'map-line active' : state === 'suggested' ? 'map-line suggested' : 'map-line';
     const line = createSvgElement('path', {
       d: `M ${centerX} ${rootY + rootH} C ${centerX} ${rootY + rootH + vGap / 2}, ${ncx} ${ny - vGap / 2}, ${ncx} ${ny}`,
       class: lineClass
@@ -918,6 +928,72 @@ input.addEventListener("input", () => {
 sidebarSearchInput.addEventListener("input", () => {
   renderSidebar();
 });
+
+// ─── My Knowledge ───
+const myKnowledgeBtn = document.getElementById("my-knowledge-btn");
+const knowledgeOverlay = document.getElementById("knowledge-overlay");
+const knowledgeOverlayClose = document.getElementById("knowledge-overlay-close");
+const knowledgeOverlayContent = document.getElementById("knowledge-overlay-content");
+
+myKnowledgeBtn.addEventListener("click", () => {
+  renderKnowledgeOverlay();
+  knowledgeOverlay.classList.remove("hidden");
+});
+
+knowledgeOverlayClose.addEventListener("click", () => {
+  knowledgeOverlay.classList.add("hidden");
+});
+
+function renderKnowledgeOverlay() {
+  const convos = loadConversations();
+  const topics = {};
+
+  Object.values(convos).forEach(convo => {
+    if (!convo.knowledgeMap || !convo.nodeStates) return;
+    const root = convo.knowledgeMap.root || "Unknown";
+    if (!topics[root]) topics[root] = { completed: [], total: 0 };
+
+    convo.knowledgeMap.nodes.forEach(node => {
+      topics[root].total++;
+      if (convo.nodeStates[node.type] === "completed") {
+        topics[root].completed.push(node);
+      }
+    });
+  });
+
+  const topicKeys = Object.keys(topics);
+
+  if (topicKeys.length === 0) {
+    knowledgeOverlayContent.innerHTML = `
+      <div class="knowledge-empty">
+        <p>No knowledge yet.</p>
+        <p class="knowledge-empty-sub">Start a conversation and complete nodes on the knowledge map to track what you've learned.</p>
+      </div>`;
+    return;
+  }
+
+  let html = '';
+  topicKeys.forEach(topic => {
+    const t = topics[topic];
+    const pct = t.total > 0 ? Math.round((t.completed.length / t.total) * 100) : 0;
+    html += `<div class="knowledge-topic">
+      <div class="knowledge-topic-header">
+        <span class="knowledge-topic-name">${topic}</span>
+        <span class="knowledge-topic-progress">${t.completed.length}/${t.total} nodes &middot; ${pct}%</span>
+      </div>
+      <div class="knowledge-progress-bar"><div class="knowledge-progress-fill" style="width:${pct}%"></div></div>`;
+    if (t.completed.length > 0) {
+      html += '<div class="knowledge-nodes">';
+      t.completed.forEach(n => {
+        html += `<span class="knowledge-node-tag">${n.type}: ${n.label}</span>`;
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+
+  knowledgeOverlayContent.innerHTML = html;
+}
 
 // ─── Init ───
 renderSidebar();

@@ -682,8 +682,8 @@ header h1 {
 /* ─── Feedback Buttons ─── */
 .msg-feedback {
   display: flex;
-  gap: 4px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 12px;
   opacity: 0;
   transition: opacity 0.15s;
 }
@@ -692,32 +692,29 @@ header h1 {
   opacity: 1;
 }
 
-.msg-feedback.voted {
-  opacity: 1;
-}
-
 .feedback-btn {
-  background: none;
-  border: 1px solid transparent;
-  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
   cursor: pointer;
-  padding: 3px 6px;
+  padding: 6px 14px;
   border-radius: 4px;
-  font-size: 14px;
-  line-height: 1;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 500;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
-.feedback-btn:hover {
-  color: var(--text-dim);
-  border-color: var(--border);
-  background: var(--bg-surface);
-}
-
-.feedback-btn.selected {
+.feedback-understand:hover {
   color: var(--accent-text);
   border-color: var(--accent-dim);
   background: var(--accent-muted);
+}
+
+.feedback-explain:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+  background: var(--bg-elevated);
 }
 
 .disclaimer {
@@ -866,6 +863,23 @@ header h1 {
   font-weight: 500;
 }
 
+.map-node.suggested rect {
+  fill: var(--bg-elevated);
+  stroke: var(--accent);
+  stroke-width: 2;
+  animation: suggestedPulse 2s ease-in-out infinite;
+}
+
+.map-node.suggested text {
+  fill: var(--accent-text);
+  font-weight: 500;
+}
+
+@keyframes suggestedPulse {
+  0%, 100% { stroke-opacity: 0.4; }
+  50% { stroke-opacity: 1; }
+}
+
 .map-line {
   stroke: var(--border);
   stroke-width: 1.5;
@@ -879,6 +893,11 @@ header h1 {
 
 .map-line.completed {
   stroke: var(--state-recognizes);
+}
+
+.map-line.suggested {
+  stroke: var(--accent);
+  stroke-dasharray: 6 3;
 }
 
 .map-node.child rect {
@@ -933,6 +952,148 @@ header h1 {
 .delete-confirm-no:hover {
   background: var(--bg-elevated);
   border-color: var(--text-muted);
+}
+
+/* ─── Sidebar Footer ─── */
+#sidebar-footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#my-knowledge-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+#my-knowledge-btn:hover {
+  border-color: var(--accent-dim);
+  background: var(--accent-muted);
+}
+
+/* ─── Knowledge Overlay ─── */
+#knowledge-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#knowledge-overlay.hidden {
+  display: none;
+}
+
+#knowledge-overlay-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+#knowledge-overlay-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.15s;
+}
+
+#knowledge-overlay-close:hover { color: var(--text); }
+
+#knowledge-overlay-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 20px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.knowledge-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-dim);
+}
+
+.knowledge-empty-sub {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.knowledge-topic {
+  margin-bottom: 24px;
+}
+
+.knowledge-topic-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.knowledge-topic-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.knowledge-topic-progress {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.knowledge-progress-bar {
+  height: 4px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.knowledge-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.knowledge-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.knowledge-node-tag {
+  background: var(--accent-muted);
+  border: 1px solid var(--accent-dim);
+  color: var(--accent-text);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
 }
 
 /* ─── Responsive ─── */
