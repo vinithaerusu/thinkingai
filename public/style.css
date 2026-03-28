@@ -166,6 +166,19 @@ header .tag {
   color: #555;
 }
 
+.chart-container {
+  margin-top: 16px;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px;
+  max-width: 100%;
+}
+
+.chart-container canvas {
+  max-height: 300px;
+}
+
 .typing {
   max-width: 680px;
   width: 100%;

@@ -66,6 +66,74 @@ function addMsg(role, text) {
 
       div.appendChild(optionsDiv);
     }
+
+    // Render charts
+    if (parsed.charts && parsed.charts.length > 0) {
+      parsed.charts.forEach(chartData => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "chart-container";
+        const canvas = document.createElement("canvas");
+        wrapper.appendChild(canvas);
+        div.appendChild(wrapper);
+
+        const colors = ['#5a5aff', '#ff5a5a', '#5aff5a', '#ffaa5a', '#5affff', '#ff5aff', '#aaff5a', '#5aaaff'];
+
+        const datasets = chartData.datasets
+          ? chartData.datasets.map((ds, i) => ({
+              label: ds.label || '',
+              data: ds.data,
+              backgroundColor: ds.backgroundColor || colors[i % colors.length] + '40',
+              borderColor: ds.borderColor || colors[i % colors.length],
+              borderWidth: 2,
+              tension: 0.3,
+              pointBackgroundColor: colors[i % colors.length],
+            }))
+          : [{
+              label: chartData.ylabel || '',
+              data: chartData.data,
+              backgroundColor: colors.slice(0, (chartData.data || []).length).map(c => c + '40'),
+              borderColor: colors.slice(0, (chartData.data || []).length),
+              borderWidth: 2,
+              tension: 0.3,
+              pointBackgroundColor: '#5a5aff',
+            }];
+
+        new Chart(canvas, {
+          type: chartData.type || 'bar',
+          data: {
+            labels: chartData.labels || [],
+            datasets: datasets,
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: !!chartData.title,
+                text: chartData.title || '',
+                color: '#e5e5e5',
+                font: { size: 14 },
+              },
+              legend: {
+                display: datasets.length > 1,
+                labels: { color: '#999' },
+              },
+            },
+            scales: {
+              x: {
+                title: { display: !!chartData.xlabel, text: chartData.xlabel || '', color: '#999' },
+                ticks: { color: '#888' },
+                grid: { color: '#222' },
+              },
+              y: {
+                title: { display: !!chartData.ylabel, text: chartData.ylabel || '', color: '#999' },
+                ticks: { color: '#888' },
+                grid: { color: '#222' },
+              },
+            },
+          },
+        });
+      });
+    }
   }
 
   chat.appendChild(div);
@@ -108,6 +176,19 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[EXPAND_MAP\][\s\S]*?\[\/EXPAND_MAP\]/, '').trim();
   }
 
+  // Parse [CHART]...[/CHART]
+  let charts = [];
+  const chartRegex = /\[CHART\]([\s\S]*?)\[\/CHART\]/g;
+  let chartMatch;
+  while ((chartMatch = chartRegex.exec(cleanText)) !== null) {
+    try {
+      charts.push(JSON.parse(chartMatch[1].trim()));
+    } catch (e) {
+      console.error('Failed to parse chart JSON:', e);
+    }
+  }
+  cleanText = cleanText.replace(/\[CHART\][\s\S]*?\[\/CHART\]/g, '').trim();
+
   // Parse [OPTIONS]...[/OPTIONS]
   let options = [];
   const optionsMatch = cleanText.match(/\[OPTIONS\]([\s\S]*?)\[\/OPTIONS\]/);
@@ -116,7 +197,7 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/, '').trim();
   }
 
-  return { cleanText, options };
+  return { cleanText, options, charts };
 }
 
 function parseKnowledgeMap(content) {
