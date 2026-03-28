@@ -76,7 +76,7 @@ function addMsg(role, text) {
         wrapper.appendChild(canvas);
         div.appendChild(wrapper);
 
-        const colors = ['#7c6aef', '#ef6a7c', '#3ec97a', '#efb86a', '#6ac9ef', '#c96aef', '#a3ef6a', '#6a8fef'];
+        const colors = ['#7c9885', '#9b8a6e', '#6e8a9b', '#9b6e7c', '#8a9b6e', '#7c6e9b', '#9b8a7c', '#6e9b8a'];
 
         const datasets = chartData.datasets
           ? chartData.datasets.map((ds, i) => ({
@@ -95,7 +95,7 @@ function addMsg(role, text) {
               borderColor: colors.slice(0, (chartData.data || []).length),
               borderWidth: 2,
               tension: 0.3,
-              pointBackgroundColor: '#7c6aef',
+              pointBackgroundColor: '#7c9885',
             }];
 
         new Chart(canvas, {
@@ -110,24 +110,24 @@ function addMsg(role, text) {
               title: {
                 display: !!chartData.title,
                 text: chartData.title || '',
-                color: '#ececef',
-                font: { size: 13, family: "'Inter', sans-serif" },
+                color: '#e0e0e0',
+                font: { size: 13, family: "'IBM Plex Sans', sans-serif" },
               },
               legend: {
                 display: datasets.length > 1,
-                labels: { color: '#a0a0ab', font: { family: "'Inter', sans-serif" } },
+                labels: { color: '#787878', font: { family: "'IBM Plex Sans', sans-serif" } },
               },
             },
             scales: {
               x: {
-                title: { display: !!chartData.xlabel, text: chartData.xlabel || '', color: '#a0a0ab', font: { family: "'Inter', sans-serif" } },
-                ticks: { color: '#6b6b78', font: { family: "'Inter', sans-serif" } },
-                grid: { color: '#1e1e24' },
+                title: { display: !!chartData.xlabel, text: chartData.xlabel || '', color: '#787878', font: { family: "'IBM Plex Sans', sans-serif" } },
+                ticks: { color: '#4a4a4a', font: { family: "'IBM Plex Sans', sans-serif" } },
+                grid: { color: '#2a2a2a' },
               },
               y: {
-                title: { display: !!chartData.ylabel, text: chartData.ylabel || '', color: '#a0a0ab', font: { family: "'Inter', sans-serif" } },
-                ticks: { color: '#6b6b78', font: { family: "'Inter', sans-serif" } },
-                grid: { color: '#1e1e24' },
+                title: { display: !!chartData.ylabel, text: chartData.ylabel || '', color: '#787878', font: { family: "'IBM Plex Sans', sans-serif" } },
+                ticks: { color: '#4a4a4a', font: { family: "'IBM Plex Sans', sans-serif" } },
+                grid: { color: '#2a2a2a' },
               },
             },
           },
