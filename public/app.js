@@ -76,7 +76,7 @@ function addMsg(role, text) {
         wrapper.appendChild(canvas);
         div.appendChild(wrapper);
 
-        const colors = ['#5a5aff', '#ff5a5a', '#5aff5a', '#ffaa5a', '#5affff', '#ff5aff', '#aaff5a', '#5aaaff'];
+        const colors = ['#7c6aef', '#ef6a7c', '#3ec97a', '#efb86a', '#6ac9ef', '#c96aef', '#a3ef6a', '#6a8fef'];
 
         const datasets = chartData.datasets
           ? chartData.datasets.map((ds, i) => ({
@@ -95,7 +95,7 @@ function addMsg(role, text) {
               borderColor: colors.slice(0, (chartData.data || []).length),
               borderWidth: 2,
               tension: 0.3,
-              pointBackgroundColor: '#5a5aff',
+              pointBackgroundColor: '#7c6aef',
             }];
 
         new Chart(canvas, {
@@ -110,24 +110,24 @@ function addMsg(role, text) {
               title: {
                 display: !!chartData.title,
                 text: chartData.title || '',
-                color: '#e5e5e5',
-                font: { size: 14 },
+                color: '#ececef',
+                font: { size: 13, family: "'Inter', sans-serif" },
               },
               legend: {
                 display: datasets.length > 1,
-                labels: { color: '#999' },
+                labels: { color: '#a0a0ab', font: { family: "'Inter', sans-serif" } },
               },
             },
             scales: {
               x: {
-                title: { display: !!chartData.xlabel, text: chartData.xlabel || '', color: '#999' },
-                ticks: { color: '#888' },
-                grid: { color: '#222' },
+                title: { display: !!chartData.xlabel, text: chartData.xlabel || '', color: '#a0a0ab', font: { family: "'Inter', sans-serif" } },
+                ticks: { color: '#6b6b78', font: { family: "'Inter', sans-serif" } },
+                grid: { color: '#1e1e24' },
               },
               y: {
-                title: { display: !!chartData.ylabel, text: chartData.ylabel || '', color: '#999' },
-                ticks: { color: '#888' },
-                grid: { color: '#222' },
+                title: { display: !!chartData.ylabel, text: chartData.ylabel || '', color: '#a0a0ab', font: { family: "'Inter', sans-serif" } },
+                ticks: { color: '#6b6b78', font: { family: "'Inter', sans-serif" } },
+                grid: { color: '#1e1e24' },
               },
             },
           },
