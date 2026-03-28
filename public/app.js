@@ -426,7 +426,8 @@ function renderMap() {
     mapSvg.insertBefore(line, rootGroup);
 
     // Node group
-    const group = createSvgElement('g', { class: `map-node ${state}` });
+    const group = createSvgElement('g', { class: `map-node ${state} clickable` });
+    group.style.cursor = 'pointer';
     group.appendChild(createSvgElement('rect', {
       x: nx, y: ny, width: nodeW, height: nodeH
     }));
@@ -441,6 +442,14 @@ function renderMap() {
     group.appendChild(createSvgElement('text', {
       x: ncx, y: ncy + 8
     }, label));
+
+    group.addEventListener('click', () => {
+      const msg = state === 'completed'
+        ? `Let's revisit ${node.label}`
+        : `Let's explore ${node.label}`;
+      input.value = msg;
+      sendMessage();
+    });
 
     mapSvg.appendChild(group);
 
@@ -464,7 +473,8 @@ function renderMap() {
         }));
 
         // Child node
-        const childGroup = createSvgElement('g', { class: `map-node child ${childState}` });
+        const childGroup = createSvgElement('g', { class: `map-node child ${childState} clickable` });
+        childGroup.style.cursor = 'pointer';
         childGroup.appendChild(createSvgElement('rect', {
           x: cx, y: childY, width: childW, height: childH
         }));
@@ -477,6 +487,14 @@ function renderMap() {
         childGroup.appendChild(createSvgElement('text', {
           x: ccx, y: ccy + 6
         }, childLabel));
+
+        childGroup.addEventListener('click', () => {
+          const msg = childState === 'completed'
+            ? `Let's revisit ${child.label} under ${node.label}`
+            : `Let's explore ${child.label} under ${node.label}`;
+          input.value = msg;
+          sendMessage();
+        });
 
         mapSvg.appendChild(childGroup);
         childY += childH + 12;
