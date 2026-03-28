@@ -97,6 +97,50 @@ header .tag {
   margin: 8px 0;
 }
 
+/* Options UI */
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #d4d4d4;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.option-btn:hover {
+  border-color: #5a5aff;
+  background: #1a1a2e;
+}
+
+.option-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  color: #c5c5ff;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
 .typing {
   max-width: 680px;
   width: 100%;
@@ -199,7 +243,11 @@ header .tag {
   background: #0d0d0d;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: width 0.3s ease;
+}
+
+#map-panel.expanded {
+  width: 50vw;
 }
 
 #map-panel.hidden {
@@ -219,17 +267,23 @@ header .tag {
   letter-spacing: 0.5px;
 }
 
-#map-close {
+#map-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#map-expand, #map-close {
   background: none;
   border: none;
   color: #666;
-  font-size: 20px;
+  font-size: 18px;
   cursor: pointer;
   padding: 0 4px;
   line-height: 1;
 }
 
-#map-close:hover { color: #fff; }
+#map-expand:hover, #map-close:hover { color: #fff; }
 
 #map-container {
   flex: 1;
@@ -372,6 +426,10 @@ header .tag {
     width: 280px;
     z-index: 20;
     box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+  }
+
+  #map-panel.expanded {
+    width: 100vw;
   }
 
   #map-toggle {

@@ -26,7 +26,17 @@ function geminiUrl(model) {
 }
 
 const SYSTEM_PROMPT = `PHASE 1 -
-When the user inputs a prompt, ask them questions to gauge what they know.
+When the user inputs a prompt, ask them ONE question at a time to gauge what they know. Present the answer choices as clickable options using [OPTIONS] and [/OPTIONS] tags. Each option should be on its own line. For example:
+
+What's your experience with investing?
+
+[OPTIONS]
+I'm completely new to this
+I know the basics but want to go deeper
+I'm fairly experienced
+[/OPTIONS]
+
+Ask only ONE question per message. Wait for the user's response before asking the next question. Keep it to 2-3 questions total before moving to Phase 2.
 
 PHASE 2 -
 Based on their responses, answer their question, but do not show it to them.

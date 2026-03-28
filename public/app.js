@@ -4,6 +4,7 @@ const send = document.getElementById("send");
 const mapPanel = document.getElementById("map-panel");
 const mapToggle = document.getElementById("map-toggle");
 const mapClose = document.getElementById("map-close");
+const mapExpand = document.getElementById("map-expand");
 const mapSvg = document.getElementById("map-svg");
 
 const sessionId = crypto.randomUUID();
@@ -28,6 +29,28 @@ function addMsg(role, text) {
     // Parse knowledge map tags before rendering
     const parsed = parseMapTags(text);
     div.innerHTML = renderMarkdown(parsed.cleanText);
+
+    // Render options as clickable buttons
+    if (parsed.options && parsed.options.length > 0) {
+      const optionsDiv = document.createElement("div");
+      optionsDiv.className = "options-container";
+
+      parsed.options.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerHTML = `<span class="option-num">${i + 1}</span> ${opt}`;
+        btn.addEventListener("click", () => {
+          // Remove all option containers to prevent re-clicking
+          document.querySelectorAll('.options-container').forEach(el => el.remove());
+          // Send the selected option as a message
+          input.value = opt;
+          sendMessage();
+        });
+        optionsDiv.appendChild(btn);
+      });
+
+      div.appendChild(optionsDiv);
+    }
   }
 
   chat.appendChild(div);
@@ -70,7 +93,15 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[EXPAND_MAP\][\s\S]*?\[\/EXPAND_MAP\]/, '').trim();
   }
 
-  return { cleanText };
+  // Parse [OPTIONS]...[/OPTIONS]
+  let options = [];
+  const optionsMatch = cleanText.match(/\[OPTIONS\]([\s\S]*?)\[\/OPTIONS\]/);
+  if (optionsMatch) {
+    options = optionsMatch[1].trim().split('\n').map(l => l.trim()).filter(l => l);
+    cleanText = cleanText.replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/, '').trim();
+  }
+
+  return { cleanText, options };
 }
 
 function parseKnowledgeMap(content) {
@@ -384,6 +415,12 @@ mapToggle.addEventListener("click", () => {
 
 mapClose.addEventListener("click", () => {
   mapPanel.classList.add("hidden");
+  mapPanel.classList.remove("expanded");
+});
+
+mapExpand.addEventListener("click", () => {
+  mapPanel.classList.toggle("expanded");
+  renderMap();
 });
 
 send.addEventListener("click", sendMessage);
