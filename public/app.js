@@ -379,8 +379,9 @@ function addMsg(role, text, isReplay) {
       });
     }
 
-    // Add actionable feedback buttons
-    if (!isReplay) {
+    // Add actionable feedback buttons (only during active node teaching, Phase 4)
+    const hasActiveNode = !isReplay && activeNodeIndex >= 0 && !parsed.options?.length && !text.match(/\[KNOWLEDGE_MAP\]/);
+    if (hasActiveNode) {
       const feedbackDiv = document.createElement("div");
       feedbackDiv.className = "msg-feedback";
 
