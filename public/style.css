@@ -82,6 +82,7 @@ header h1 {
   flex-direction: column;
   gap: 20px;
   scroll-behavior: smooth;
+  align-items: center;
 }
 
 #chat::-webkit-scrollbar { width: 4px; }
@@ -112,8 +113,7 @@ header h1 {
   color: var(--text);
   max-width: 520px;
   width: auto;
-  margin: 0;
-  align-self: flex-end;
+  margin: 0 0 0 auto;
 }
 
 .msg.ai {
