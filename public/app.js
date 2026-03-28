@@ -156,12 +156,12 @@ function renderMap() {
   if (!knowledgeMap) return;
 
   const nodes = knowledgeMap.nodes;
-  const nodeW = 130;
-  const nodeH = 44;
-  const childW = 110;
-  const childH = 36;
-  const rootW = 140;
-  const rootH = 40;
+  const nodeW = 180;
+  const nodeH = 48;
+  const childW = 160;
+  const childH = 40;
+  const rootW = 180;
+  const rootH = 44;
   const vGap = 60;
   const childVGap = 40;
   const hGap = 16;
@@ -243,7 +243,7 @@ function renderMap() {
     }, node.type));
 
     // Value label
-    const label = node.label.length > 18 ? node.label.slice(0, 16) + '...' : node.label;
+    const label = node.label.length > 28 ? node.label.slice(0, 26) + '...' : node.label;
     group.appendChild(createSvgElement('text', {
       x: ncx, y: ncy + 8
     }, label));
@@ -279,7 +279,7 @@ function renderMap() {
           x: ccx, y: ccy - 6, class: 'map-node-type'
         }, child.type));
 
-        const childLabel = child.label.length > 16 ? child.label.slice(0, 14) + '...' : child.label;
+        const childLabel = child.label.length > 24 ? child.label.slice(0, 22) + '...' : child.label;
         childGroup.appendChild(createSvgElement('text', {
           x: ccx, y: ccy + 6
         }, childLabel));
