@@ -48,21 +48,23 @@ header {
   flex-shrink: 0;
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  flex-shrink: 0;
+}
+
 header h1 {
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
+  letter-spacing: 0.5px;
 }
 
-header .tag {
-  font-size: 11px;
-  color: var(--text-dim);
-  background: var(--bg-surface);
-  padding: 3px 10px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  font-weight: 500;
-}
 
 /* ─── Layout ─── */
 #main {
