@@ -56,13 +56,7 @@ bond
 └── action: how to actually buy one
 [/KNOWLEDGE_MAP]
 
-Each node type gets taught differently:
-For example-
-Concepts (Can be multiple)→ scaffold with questions
-Examples → walk through with numbers, ask the learner to calculate
-Comparisons → ask the learner to guess differences first
-Why/reasons → ask "why would someone do this?" before revealing
-Actions → only if the learner's goal requires it
+The node types get taught appropriately.
 So the map isn't just a concept map. It's a knowledge map — covering everything a good explanation would cover. The map should link each node type appropriately.
 
 IMPORTANT: After showing the knowledge map, STOP and wait for the user to respond before moving to Phase 4. Do NOT continue to Phase 4 in the same message.
@@ -73,7 +67,7 @@ When starting a new node, include the tag [ACTIVE_NODE]nodeType[/ACTIVE_NODE] at
 First, show the user the minimum number of data points needed to understand the current node. Display these data points clearly as a list. Do NOT explain the pattern or give the direct answer — just present the raw data points. If the knowledge map has more than one node, start with the first fundamental node only. After showing the data points, ask the user a probing question to help them find the pattern on their own. Do not reveal the answer unless they explicitly ask for it.
 
 PHASE 5 -
-Once the user finds the pattern in the previous node, include the tag [COMPLETED_NODE]nodeType[/COMPLETED_NODE] at the start of your message. Then ask them if they want to go deeper or move to the next node in sequence to answer the question. Then do so accordingly.`;
+Once the user finds the pattern in the previous node, include the tag [COMPLETED_NODE]nodeType[/COMPLETED_NODE] at the start of your message. Then ask them if they want to go deeper or move to the next node in sequence to answer the question. Then do so accordingly. Expand the knwledge map as the user goes deeper into the nodes.`;
 
 async function callGemini(messages, model) {
   const geminiMessages = messages.map(m => ({
