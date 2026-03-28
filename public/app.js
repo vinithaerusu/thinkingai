@@ -149,32 +149,105 @@ function saveCurrentConversation() {
 }
 
 function saveLearningPath(pathData) {
-  const data = loadLearningData();
-  const pathId = crypto.randomUUID();
-  data.paths[pathId] = {
-    id: pathId,
+  // Legacy: convert simple path to course format
+  saveCourse({
     title: pathData.title,
-    topics: pathData.topics || [],
-    currentIndex: 0,
-    createdAt: Date.now()
-  };
-  saveLearningData(data);
+    description: '',
+    modules: (pathData.topics || []).map((t, i) => ({
+      title: t,
+      prompt: t,
+      prerequisite: i === 0 ? null : i - 1,
+      isMilestone: false,
+      completedAt: null
+    }))
+  });
 }
 
-function getActivePaths() {
+function saveCourse(courseData) {
   const data = loadLearningData();
-  return Object.values(data.paths)
-    .filter(p => p.currentIndex < p.topics.length)
+  if (!data.courses) data.courses = {};
+  const courseId = crypto.randomUUID();
+  data.courses[courseId] = {
+    id: courseId,
+    title: courseData.title,
+    description: courseData.description || '',
+    modules: (courseData.modules || []).map(m => ({
+      title: m.title,
+      prompt: m.prompt || m.title,
+      prerequisite: m.prerequisite ?? null,
+      isMilestone: m.isMilestone || false,
+      completedAt: m.completedAt || null
+    })),
+    currentIndex: 0,
+    createdAt: Date.now(),
+    completedAt: null
+  };
+  saveLearningData(data);
+  return courseId;
+}
+
+function getActiveCourses() {
+  const data = loadLearningData();
+  // Migrate old paths to courses
+  if (data.paths && Object.keys(data.paths).length > 0 && (!data.courses || Object.keys(data.courses).length === 0)) {
+    if (!data.courses) data.courses = {};
+    Object.values(data.paths).forEach(p => {
+      data.courses[p.id] = {
+        id: p.id,
+        title: p.title,
+        description: '',
+        modules: (p.topics || []).map((t, i) => ({
+          title: t, prompt: t, prerequisite: i === 0 ? null : i - 1,
+          isMilestone: false, completedAt: null
+        })),
+        currentIndex: p.currentIndex || 0,
+        createdAt: p.createdAt,
+        completedAt: null
+      };
+    });
+    delete data.paths;
+    saveLearningData(data);
+  }
+  const courses = data.courses || {};
+  return Object.values(courses)
+    .filter(c => !c.completedAt)
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
-function advancePath(pathId) {
+function getCourse(courseId) {
   const data = loadLearningData();
-  if (data.paths[pathId]) {
-    data.paths[pathId].currentIndex++;
-    saveLearningData(data);
-  }
+  return (data.courses || {})[courseId] || null;
 }
+
+function advanceCourse(courseId) {
+  const data = loadLearningData();
+  const course = (data.courses || {})[courseId];
+  if (!course) return;
+  // Mark current module as completed
+  if (course.modules[course.currentIndex]) {
+    course.modules[course.currentIndex].completedAt = Date.now();
+  }
+  course.currentIndex++;
+  // Check if course is fully completed
+  if (course.currentIndex >= course.modules.length) {
+    course.completedAt = Date.now();
+  }
+  saveLearningData(data);
+}
+
+function getCourseContext(courseId) {
+  const course = getCourse(courseId);
+  if (!course || course.currentIndex === 0) return '';
+  const completed = course.modules.slice(0, course.currentIndex)
+    .filter(m => m.completedAt)
+    .map(m => m.title);
+  if (completed.length === 0) return '';
+  return `[Context: This is part of a learning course "${course.title}". The learner has already completed: ${completed.join(', ')}. Build on what they already know.]`;
+}
+
+// Legacy compat
+function getActivePaths() { return getActiveCourses(); }
+function advancePath(pathId) { advanceCourse(pathId); }
 
 function updateQuizScore(quality) {
   // Update the most recently due node's SR data
@@ -231,6 +304,7 @@ function startNewConversation() {
   activeNodeIndex = -1;
   topicFullyCompleted = false;
   quizMode = false;
+  activeCourseId = null;
 
   // Reset UI
   renderWelcomeScreen();
@@ -397,21 +471,28 @@ function renderWelcomeScreen() {
     html += '</div>';
   }
 
-  // Learning paths section
-  const activePaths = getActivePaths();
-  if (activePaths.length > 0) {
-    html += '<div class="paths-section">';
-    html += '<h3 class="review-heading">Continue learning</h3>';
-    activePaths.slice(0, 3).forEach(path => {
-      const pct = path.topics.length > 0 ? Math.round((path.currentIndex / path.topics.length) * 100) : 0;
-      const nextTopic = path.topics[path.currentIndex] || '';
-      html += `<button class="path-card" data-path-id="${path.id}" data-next-topic="${nextTopic}">
-        <div class="path-card-header">
-          <span class="path-card-title">${path.title}</span>
-          <span class="path-card-progress">${path.currentIndex}/${path.topics.length}</span>
+  // Courses section
+  const activeCourses = getActiveCourses();
+  if (activeCourses.length > 0) {
+    html += '<div class="courses-section">';
+    html += '<h3 class="review-heading">Your courses</h3>';
+    activeCourses.slice(0, 3).forEach(course => {
+      const total = course.modules.length;
+      const completed = course.modules.filter(m => m.completedAt).length;
+      const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+      const nextModule = course.modules[course.currentIndex];
+      const nextTitle = nextModule ? nextModule.title : '';
+      html += `<button class="course-card" data-course-id="${course.id}">
+        <div class="course-card-header">
+          <span class="course-card-title">${course.title}</span>
+          <span class="course-card-progress">${completed}/${total}</span>
         </div>
+        ${course.description ? `<span class="course-card-desc">${course.description}</span>` : ''}
         <div class="knowledge-progress-bar"><div class="knowledge-progress-fill" style="width:${pct}%"></div></div>
-        <span class="path-card-next">Next: ${nextTopic}</span>
+        <div class="course-card-footer">
+          <span class="course-card-next">Next: ${nextTitle}</span>
+          <span class="course-card-view">View course &rarr;</span>
+        </div>
       </button>`;
     });
     html += '</div>';
@@ -432,18 +513,13 @@ function renderWelcomeScreen() {
   chat.innerHTML = html;
   bindTopicButtons();
   bindReviewCards();
-  bindPathCards();
+  bindCourseCards();
 }
 
-function bindPathCards() {
-  document.querySelectorAll(".path-card").forEach(card => {
+function bindCourseCards() {
+  document.querySelectorAll(".course-card").forEach(card => {
     card.addEventListener("click", () => {
-      const pathId = card.dataset.pathId;
-      const nextTopic = card.dataset.nextTopic;
-      quizMode = false;
-      advancePath(pathId);
-      input.value = nextTopic;
-      sendMessage();
+      openCourseOverlay(card.dataset.courseId);
     });
   });
 }
@@ -726,12 +802,26 @@ function addMsg(role, text, isReplay) {
       });
     }
 
-    // Render learning path suggestion
+    // Render learning path / course suggestion
     if (!isReplay && parsed.learningPath) {
+      const lp = parsed.learningPath;
       const pathDiv = document.createElement("div");
       pathDiv.className = "learning-path-suggestion";
-      pathDiv.innerHTML = `<h4>Suggested learning path: ${parsed.learningPath.title}</h4>
-        <div class="path-topics">${(parsed.learningPath.topics || []).map((t, i) => `<span class="path-topic-item">${i + 1}. ${t}</span>`).join('')}</div>`;
+      if (lp.modules && lp.modules.length > 0) {
+        pathDiv.innerHTML = `<h4>Suggested course: ${lp.title}</h4>
+          ${lp.description ? `<p class="course-suggest-desc">${lp.description}</p>` : ''}
+          <div class="course-suggest-modules">${lp.modules.map((m, i) =>
+            `<div class="course-suggest-module${m.isMilestone ? ' milestone' : ''}">
+              <span class="course-suggest-num">${i + 1}</span>
+              <span class="course-suggest-title">${m.title}</span>
+              ${m.isMilestone ? '<span class="module-milestone-badge">Milestone</span>' : ''}
+            </div>`
+          ).join('')}</div>
+          <p class="course-suggest-footer">This course has been saved. You can start it from the welcome screen.</p>`;
+      } else {
+        pathDiv.innerHTML = `<h4>Suggested learning path: ${lp.title}</h4>
+          <div class="path-topics">${(lp.topics || []).map((t, i) => `<span class="path-topic-item">${i + 1}. ${t}</span>`).join('')}</div>`;
+      }
       div.appendChild(pathDiv);
     }
 
@@ -864,15 +954,22 @@ function parseMapTags(text) {
   }
   cleanText = cleanText.replace(/\[QUIZ\][\s\S]*?\[\/QUIZ\]/g, '').trim();
 
-  // Parse learning path suggestions
+  // Parse learning path / course suggestions
   const pathMatch = cleanText.match(/\[LEARNING_PATH\]([\s\S]*?)\[\/LEARNING_PATH\]/);
   let learningPath = null;
   if (pathMatch) {
     try {
-      learningPath = JSON.parse(pathMatch[1].trim());
-      saveLearningPath(learningPath);
+      const parsed = JSON.parse(pathMatch[1].trim());
+      learningPath = parsed;
+      if (parsed.modules && parsed.modules.length > 0) {
+        // New course format
+        saveCourse(parsed);
+      } else if (parsed.topics) {
+        // Legacy format
+        saveLearningPath(parsed);
+      }
     } catch (e) {
-      // Try line-based format
+      // Try line-based format (legacy)
       const pathLines = pathMatch[1].trim().split('\n').filter(l => l.trim());
       if (pathLines.length >= 2) {
         learningPath = { title: pathLines[0].trim(), topics: pathLines.slice(1).map(l => l.replace(/^[\d\.\-\*]+\s*/, '').trim()) };
@@ -946,6 +1043,10 @@ function completeNode(name) {
   const allCompleted = knowledgeMap.nodes.every(n => nodeStates[n.type] === 'completed');
   if (allCompleted) {
     topicFullyCompleted = true;
+    // If this conversation is part of a course, advance the course
+    if (activeCourseId) {
+      advanceCourse(activeCourseId);
+    }
   }
 
   renderMap();
@@ -1527,6 +1628,105 @@ function renderTimelineTab() {
   html += '</div>';
 
   knowledgeOverlayContent.innerHTML = html;
+}
+
+// ─── Course Overlay ───
+const courseOverlay = document.getElementById("course-overlay");
+const courseOverlayTitle = document.getElementById("course-overlay-title");
+const courseOverlayContent = document.getElementById("course-overlay-content");
+const courseOverlayClose = document.getElementById("course-overlay-close");
+const courseOverlayBack = document.getElementById("course-overlay-back");
+
+let activeCourseId = null; // track which course the current conversation belongs to
+
+courseOverlayClose.addEventListener("click", () => courseOverlay.classList.add("hidden"));
+courseOverlayBack.addEventListener("click", () => courseOverlay.classList.add("hidden"));
+
+function openCourseOverlay(courseId) {
+  const course = getCourse(courseId);
+  if (!course) return;
+  courseOverlayTitle.textContent = course.title;
+  renderCourseModules(course);
+  courseOverlay.classList.remove("hidden");
+}
+
+function renderCourseModules(course) {
+  const total = course.modules.length;
+  const completed = course.modules.filter(m => m.completedAt).length;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  let html = '<div class="course-detail">';
+
+  if (course.description) {
+    html += `<p class="course-detail-desc">${course.description}</p>`;
+  }
+
+  html += `<div class="course-detail-stats">
+    <span>${completed}/${total} modules</span>
+    <span>${pct}% complete</span>
+  </div>`;
+  html += `<div class="knowledge-progress-bar"><div class="knowledge-progress-fill" style="width:${pct}%"></div></div>`;
+
+  html += '<div class="course-modules">';
+  course.modules.forEach((mod, i) => {
+    const isCompleted = !!mod.completedAt;
+    const isCurrent = i === course.currentIndex && !course.completedAt;
+    const isLocked = !isCompleted && !isCurrent && mod.prerequisite !== null && !course.modules[mod.prerequisite]?.completedAt;
+    const isMilestone = mod.isMilestone;
+
+    let stateClass = 'locked';
+    let stateIcon = '<span class="module-icon locked">&#128274;</span>';
+    if (isCompleted) {
+      stateClass = 'completed';
+      stateIcon = '<span class="module-icon completed">&#10003;</span>';
+    } else if (isCurrent) {
+      stateClass = 'current';
+      stateIcon = '<span class="module-icon current">&#9654;</span>';
+    }
+
+    html += `<div class="course-module ${stateClass}${isMilestone ? ' milestone' : ''}" data-module-index="${i}" data-course-id="${course.id}">
+      ${stateIcon}
+      <div class="module-info">
+        <span class="module-title">${mod.title}</span>
+        ${isMilestone ? '<span class="module-milestone-badge">Milestone</span>' : ''}
+        ${isCompleted && mod.completedAt ? `<span class="module-date">${new Date(mod.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>` : ''}
+      </div>
+      ${isCurrent ? '<button class="module-start-btn">Start</button>' : ''}
+    </div>`;
+  });
+  html += '</div>';
+
+  if (course.completedAt) {
+    html += `<div class="course-completed-msg">Course completed! &#127881;</div>`;
+  }
+
+  html += '</div>';
+  courseOverlayContent.innerHTML = html;
+
+  // Bind start buttons
+  courseOverlayContent.querySelectorAll('.module-start-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const moduleEl = btn.closest('.course-module');
+      const courseId = moduleEl.dataset.courseId;
+      const idx = parseInt(moduleEl.dataset.moduleIndex);
+      startCourseModule(courseId, idx);
+    });
+  });
+}
+
+function startCourseModule(courseId, moduleIndex) {
+  const course = getCourse(courseId);
+  if (!course || !course.modules[moduleIndex]) return;
+
+  courseOverlay.classList.add("hidden");
+  startNewConversation();
+
+  activeCourseId = courseId;
+  const mod = course.modules[moduleIndex];
+  const context = getCourseContext(courseId);
+  quizMode = false;
+  input.value = context ? `${context}\n\n${mod.prompt}` : mod.prompt;
+  sendMessage();
 }
 
 // ─── Init ───

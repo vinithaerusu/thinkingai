@@ -121,13 +121,17 @@ concept
 
 The visual map will automatically show these as children of the parent node.
 
-When ALL nodes in the knowledge map have been completed, congratulate the user and suggest a learning path of 3-5 related topics they could explore next. Format it using [LEARNING_PATH] and [/LEARNING_PATH] tags with JSON:
+When ALL nodes in the knowledge map have been completed, congratulate the user and suggest a structured learning course they could follow next. Format it using [LEARNING_PATH] and [/LEARNING_PATH] tags with JSON. The course should have:
+- A clear title and description
+- 4-6 modules in a logical progression (each building on the previous)
+- Mark one module as a milestone (a checkpoint to consolidate learning)
+- Each module's "prompt" should be a complete learning question
 
 [LEARNING_PATH]
-{"title":"Investment Fundamentals","topics":["How do stocks work?","What are mutual funds?","How does portfolio diversification work?"]}
+{"title":"Investment Fundamentals","description":"Build a complete understanding of how investing works, from basic instruments to portfolio strategy.","modules":[{"title":"How stocks work","prompt":"How do stocks work and how does the stock market function?","prerequisite":null,"isMilestone":false},{"title":"Understanding mutual funds","prompt":"What are mutual funds and how do they differ from buying individual stocks?","prerequisite":0,"isMilestone":false},{"title":"Checkpoint: Stocks vs Funds","prompt":"Compare and contrast stocks and mutual funds — when would you choose each?","prerequisite":1,"isMilestone":true},{"title":"Portfolio diversification","prompt":"How does portfolio diversification work and why does it reduce risk?","prerequisite":2,"isMilestone":false},{"title":"Risk and return tradeoffs","prompt":"How do investors balance risk and return when building a portfolio?","prerequisite":3,"isMilestone":false}]}
 [/LEARNING_PATH]
 
-The app will save this as a learning path the user can continue later.`;
+The app will save this as a structured course the user can follow step by step.`;
 
 const QUIZ_SYSTEM_PROMPT = `You are quizzing the user on a concept they previously learned. The user's first message will tell you the topic and concept.
 
