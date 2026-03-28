@@ -516,23 +516,115 @@ function createSvgElement(tag, attrs, text) {
 }
 
 function renderMarkdown(text) {
+  const lines = text.split('\n');
+  let html = '';
+  let inList = false;
+  let listType = '';
+  let inBlockquote = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    // Horizontal rule
+    if (/^---+$/.test(line.trim())) {
+      if (inList) { html += `</${listType}>`; inList = false; }
+      if (inBlockquote) { html += '</blockquote>'; inBlockquote = false; }
+      html += '<hr>';
+      continue;
+    }
+
+    // Headers
+    const h3 = line.match(/^### (.+)/);
+    if (h3) {
+      if (inList) { html += `</${listType}>`; inList = false; }
+      html += `<h4>${applyInline(h3[1])}</h4>`;
+      continue;
+    }
+    const h2 = line.match(/^## (.+)/);
+    if (h2) {
+      if (inList) { html += `</${listType}>`; inList = false; }
+      html += `<h3>${applyInline(h2[1])}</h3>`;
+      continue;
+    }
+    const h1 = line.match(/^# (.+)/);
+    if (h1) {
+      if (inList) { html += `</${listType}>`; inList = false; }
+      html += `<h2>${applyInline(h1[1])}</h2>`;
+      continue;
+    }
+
+    // Blockquote
+    const bq = line.match(/^> (.+)/);
+    if (bq) {
+      if (inList) { html += `</${listType}>`; inList = false; }
+      if (!inBlockquote) { html += '<blockquote>'; inBlockquote = true; }
+      html += `<p>${applyInline(bq[1])}</p>`;
+      continue;
+    } else if (inBlockquote) {
+      html += '</blockquote>';
+      inBlockquote = false;
+    }
+
+    // Unordered list
+    const ul = line.match(/^[\-\*] (.+)/);
+    if (ul) {
+      if (!inList || listType !== 'ul') {
+        if (inList) html += `</${listType}>`;
+        html += '<ul>';
+        inList = true;
+        listType = 'ul';
+      }
+      html += `<li>${applyInline(ul[1])}</li>`;
+      continue;
+    }
+
+    // Ordered list
+    const ol = line.match(/^\d+\. (.+)/);
+    if (ol) {
+      if (!inList || listType !== 'ol') {
+        if (inList) html += `</${listType}>`;
+        html += '<ol>';
+        inList = true;
+        listType = 'ol';
+      }
+      html += `<li>${applyInline(ol[1])}</li>`;
+      continue;
+    }
+
+    // Close list if we're no longer in one
+    if (inList) {
+      html += `</${listType}>`;
+      inList = false;
+    }
+
+    // Empty line = paragraph break
+    if (line.trim() === '') {
+      html += '<div class="spacer"></div>';
+      continue;
+    }
+
+    // Regular paragraph
+    html += `<p>${applyInline(line)}</p>`;
+  }
+
+  if (inList) html += `</${listType}>`;
+  if (inBlockquote) html += '</blockquote>';
+
+  return html;
+}
+
+function applyInline(text) {
   return text
-    .replace(/^---$/gm, "<hr>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
-    .replace(/^(\d+)\. (.+)$/gm, "<li>$2</li>")
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/\n/g, "<br>")
-    .replace(/^/, "<p>")
-    .replace(/$/, "</p>");
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>');
 }
 
 function showTyping() {
   const div = document.createElement("div");
   div.className = "typing";
   div.id = "typing";
-  div.innerHTML = "<span>Thinking...</span>";
+  div.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div> Thinking';
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
