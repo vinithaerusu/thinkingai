@@ -116,7 +116,6 @@ function loadConversation(id) {
   // Restore map
   if (knowledgeMap) {
     mapPanel.classList.remove("hidden");
-    mapPanel.classList.add("expanded");
     mapToggle.classList.remove("hidden");
     renderMap();
   } else {
@@ -485,7 +484,6 @@ function parseKnowledgeMap(content) {
   activeNodeIndex = -1;
 
   mapPanel.classList.remove('hidden');
-  mapPanel.classList.add('expanded');
   mapToggle.classList.remove('hidden');
   renderMap();
 }
