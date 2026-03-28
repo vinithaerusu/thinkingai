@@ -14,6 +14,7 @@ const newChatBtn = document.getElementById("new-chat-btn");
 
 // ─── Persistence ───
 const STORAGE_KEY = "aux_conversations";
+const LEARNING_KEY = "aux_learning_data";
 
 function loadConversations() {
   try {
@@ -23,6 +24,113 @@ function loadConversations() {
 
 function saveConversations(convos) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(convos));
+}
+
+// ─── Learning Data Layer ───
+function loadLearningData() {
+  try {
+    return JSON.parse(localStorage.getItem(LEARNING_KEY)) || { nodes: {}, activity: {}, streak: { current: 0, longest: 0, lastActiveDate: null }, paths: {} };
+  } catch { return { nodes: {}, activity: {}, streak: { current: 0, longest: 0, lastActiveDate: null }, paths: {} }; }
+}
+
+function saveLearningData(data) {
+  localStorage.setItem(LEARNING_KEY, JSON.stringify(data));
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function updateStreak(data) {
+  const today = todayStr();
+  if (data.streak.lastActiveDate === today) return;
+
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+  if (data.streak.lastActiveDate === yesterdayStr) {
+    data.streak.current++;
+  } else {
+    data.streak.current = 1;
+  }
+  data.streak.longest = Math.max(data.streak.longest, data.streak.current);
+  data.streak.lastActiveDate = today;
+}
+
+function recordActivity(data, type) {
+  const today = todayStr();
+  if (!data.activity[today]) {
+    data.activity[today] = { nodesCompleted: 0, nodesReviewed: 0, quizzesTaken: 0, quizAvgScore: 0 };
+  }
+  if (type === 'completed') data.activity[today].nodesCompleted++;
+  if (type === 'reviewed') data.activity[today].nodesReviewed++;
+  if (type === 'quiz') data.activity[today].quizzesTaken++;
+
+  // Prune activity older than 90 days
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 90);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  Object.keys(data.activity).forEach(d => {
+    if (d < cutoffStr) delete data.activity[d];
+  });
+}
+
+// SM-2 Spaced Repetition Algorithm
+function calculateSR(quality, node) {
+  // quality: 0-5 (0=complete blackout, 5=perfect recall)
+  let { interval, easeFactor, repetitions } = node;
+  if (quality >= 3) {
+    if (repetitions === 0) interval = 1;
+    else if (repetitions === 1) interval = 6;
+    else interval = Math.round(interval * easeFactor);
+    repetitions++;
+  } else {
+    repetitions = 0;
+    interval = 1;
+  }
+  easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
+  const nextReviewAt = Date.now() + interval * 24 * 60 * 60 * 1000;
+  return { interval, easeFactor, repetitions, nextReviewAt };
+}
+
+function recordNodeCompletion(topic, node, convoId) {
+  const data = loadLearningData();
+  const key = `${topic}::${node.type}`;
+
+  if (!data.nodes[key]) {
+    data.nodes[key] = {
+      id: key,
+      topic: topic,
+      nodeType: node.type,
+      label: node.label,
+      completedAt: Date.now(),
+      lastReviewedAt: Date.now(),
+      nextReviewAt: Date.now() + 1 * 24 * 60 * 60 * 1000, // 1 day
+      interval: 1,
+      easeFactor: 2.5,
+      repetitions: 0,
+      quizHistory: [],
+      sourceConvoId: convoId
+    };
+  } else {
+    // Node already known — treat as a review with quality 4
+    const sr = calculateSR(4, data.nodes[key]);
+    Object.assign(data.nodes[key], sr);
+    data.nodes[key].lastReviewedAt = Date.now();
+  }
+
+  updateStreak(data);
+  recordActivity(data, data.nodes[key].repetitions === 0 ? 'completed' : 'reviewed');
+  saveLearningData(data);
+}
+
+function getDueNodes() {
+  const data = loadLearningData();
+  const now = Date.now();
+  return Object.values(data.nodes)
+    .filter(n => n.nextReviewAt <= now)
+    .sort((a, b) => a.nextReviewAt - b.nextReviewAt);
 }
 
 function saveCurrentConversation() {
@@ -40,6 +148,58 @@ function saveCurrentConversation() {
   renderSidebar();
 }
 
+function saveLearningPath(pathData) {
+  const data = loadLearningData();
+  const pathId = crypto.randomUUID();
+  data.paths[pathId] = {
+    id: pathId,
+    title: pathData.title,
+    topics: pathData.topics || [],
+    currentIndex: 0,
+    createdAt: Date.now()
+  };
+  saveLearningData(data);
+}
+
+function getActivePaths() {
+  const data = loadLearningData();
+  return Object.values(data.paths)
+    .filter(p => p.currentIndex < p.topics.length)
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+function advancePath(pathId) {
+  const data = loadLearningData();
+  if (data.paths[pathId]) {
+    data.paths[pathId].currentIndex++;
+    saveLearningData(data);
+  }
+}
+
+function updateQuizScore(quality) {
+  // Update the most recently due node's SR data
+  const data = loadLearningData();
+  const dueNodes = Object.values(data.nodes)
+    .filter(n => n.nextReviewAt <= Date.now())
+    .sort((a, b) => a.nextReviewAt - b.nextReviewAt);
+
+  if (dueNodes.length > 0) {
+    const node = data.nodes[dueNodes[0].id];
+    const sr = calculateSR(quality, node);
+    Object.assign(node, sr);
+    node.lastReviewedAt = Date.now();
+    node.quizHistory.push({ timestamp: Date.now(), score: quality, type: 'quiz' });
+    // Keep last 20 quiz entries
+    if (node.quizHistory.length > 20) node.quizHistory = node.quizHistory.slice(-20);
+    updateStreak(data);
+    recordActivity(data, 'quiz');
+    saveLearningData(data);
+  }
+}
+
+// Track quiz mode for conversations
+let quizMode = false;
+
 // ─── State ───
 let currentConvoId = crypto.randomUUID();
 let convoTitle = "";
@@ -48,6 +208,7 @@ let sending = false;
 let knowledgeMap = null;
 let nodeStates = {};
 let activeNodeIndex = -1;
+let topicFullyCompleted = false;
 
 // ─── Sidebar ───
 sidebarToggle.addEventListener("click", () => {
@@ -68,22 +229,11 @@ function startNewConversation() {
   knowledgeMap = null;
   nodeStates = {};
   activeNodeIndex = -1;
+  topicFullyCompleted = false;
+  quizMode = false;
 
   // Reset UI
-  chat.innerHTML = `
-    <div class="welcome">
-      <h2>Learn anything</h2>
-      <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
-      <div class="suggested-topics">
-        <button class="topic-btn" data-topic="How does compound interest work?">Compound interest</button>
-        <button class="topic-btn" data-topic="Explain how neural networks learn">Neural networks</button>
-        <button class="topic-btn" data-topic="How does the immune system fight infections?">Immune system</button>
-        <button class="topic-btn" data-topic="What is supply and demand in economics?">Supply &amp; demand</button>
-        <button class="topic-btn" data-topic="How does encryption keep data secure?">Encryption</button>
-        <button class="topic-btn" data-topic="How do black holes form?">Black holes</button>
-      </div>
-    </div>`;
-  bindTopicButtons();
+  renderWelcomeScreen();
 
   mapPanel.classList.add("hidden");
   mapPanel.classList.remove("expanded");
@@ -208,7 +358,96 @@ function renderSidebar() {
   });
 }
 
-// ─── Suggested Topics ───
+// ─── Welcome Screen ───
+function renderWelcomeScreen() {
+  const dueNodes = getDueNodes();
+  const data = loadLearningData();
+  const totalLearned = Object.keys(data.nodes).length;
+  const streak = data.streak.current;
+
+  let html = '<div class="welcome">';
+
+  // Stats bar (only show if user has learned something)
+  if (totalLearned > 0) {
+    html += `<div class="welcome-stats">
+      <div class="welcome-stat"><span class="stat-value">${totalLearned}</span><span class="stat-label">nodes learned</span></div>
+      <div class="welcome-stat"><span class="stat-value">${streak}</span><span class="stat-label">day streak</span></div>
+    </div>`;
+  }
+
+  // Due for review section
+  if (dueNodes.length > 0) {
+    html += '<div class="review-section">';
+    html += '<h3 class="review-heading">Due for review</h3>';
+    html += '<div class="review-cards">';
+    dueNodes.slice(0, 4).forEach(node => {
+      const daysAgo = Math.floor((Date.now() - node.lastReviewedAt) / (1000 * 60 * 60 * 24));
+      const daysText = daysAgo === 0 ? 'today' : daysAgo === 1 ? '1 day ago' : `${daysAgo} days ago`;
+      html += `<button class="review-card" data-topic="${node.topic}" data-node="${node.nodeType}" data-label="${node.label}">
+        <span class="review-card-topic">${node.topic}</span>
+        <span class="review-card-node">${node.nodeType}: ${node.label}</span>
+        <span class="review-card-time">Last reviewed ${daysText}</span>
+      </button>`;
+    });
+    html += '</div>';
+    if (dueNodes.length > 4) {
+      html += `<span class="review-more">+${dueNodes.length - 4} more due</span>`;
+    }
+    html += '<button class="quiz-start-btn" id="quick-quiz-btn">Quick Quiz</button>';
+    html += '</div>';
+  }
+
+  // Learning paths section
+  const activePaths = getActivePaths();
+  if (activePaths.length > 0) {
+    html += '<div class="paths-section">';
+    html += '<h3 class="review-heading">Continue learning</h3>';
+    activePaths.slice(0, 3).forEach(path => {
+      const pct = path.topics.length > 0 ? Math.round((path.currentIndex / path.topics.length) * 100) : 0;
+      const nextTopic = path.topics[path.currentIndex] || '';
+      html += `<button class="path-card" data-path-id="${path.id}" data-next-topic="${nextTopic}">
+        <div class="path-card-header">
+          <span class="path-card-title">${path.title}</span>
+          <span class="path-card-progress">${path.currentIndex}/${path.topics.length}</span>
+        </div>
+        <div class="knowledge-progress-bar"><div class="knowledge-progress-fill" style="width:${pct}%"></div></div>
+        <span class="path-card-next">Next: ${nextTopic}</span>
+      </button>`;
+    });
+    html += '</div>';
+  }
+
+  html += '<h2>Learn anything deeply</h2>';
+  html += '<p>I teach through real examples and let you find the patterns yourself. It sticks better than being told. Just type what you want to learn.</p>';
+  html += `<div class="suggested-topics">
+    <button class="topic-btn" data-topic="How does compound interest work?">Compound interest</button>
+    <button class="topic-btn" data-topic="Explain how neural networks learn">Neural networks</button>
+    <button class="topic-btn" data-topic="How does the immune system fight infections?">Immune system</button>
+    <button class="topic-btn" data-topic="What is supply and demand in economics?">Supply &amp; demand</button>
+    <button class="topic-btn" data-topic="How does encryption keep data secure?">Encryption</button>
+    <button class="topic-btn" data-topic="How do black holes form?">Black holes</button>
+  </div>`;
+  html += '</div>';
+
+  chat.innerHTML = html;
+  bindTopicButtons();
+  bindReviewCards();
+  bindPathCards();
+}
+
+function bindPathCards() {
+  document.querySelectorAll(".path-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const pathId = card.dataset.pathId;
+      const nextTopic = card.dataset.nextTopic;
+      quizMode = false;
+      advancePath(pathId);
+      input.value = nextTopic;
+      sendMessage();
+    });
+  });
+}
+
 function bindTopicButtons() {
   document.querySelectorAll(".topic-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -217,7 +456,32 @@ function bindTopicButtons() {
     });
   });
 }
-bindTopicButtons();
+
+function bindReviewCards() {
+  document.querySelectorAll(".review-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const topic = card.dataset.topic;
+      const label = card.dataset.label;
+      quizMode = false;
+      input.value = `Review: Let me test my understanding of ${label} in ${topic}`;
+      sendMessage();
+    });
+  });
+
+  const quizBtn = document.getElementById("quick-quiz-btn");
+  if (quizBtn) {
+    quizBtn.addEventListener("click", () => {
+      const dueNodes = getDueNodes();
+      if (dueNodes.length === 0) return;
+      const node = dueNodes[0];
+      quizMode = true;
+      input.value = `Quiz me on ${node.nodeType}: ${node.label} (topic: ${node.topic})`;
+      sendMessage();
+    });
+  }
+}
+
+renderWelcomeScreen();
 
 // ─── Messages ───
 function addMsg(role, text, isReplay) {
@@ -379,6 +643,98 @@ function addMsg(role, text, isReplay) {
       });
     }
 
+    // Render quizzes
+    if (!isReplay && parsed.quizzes && parsed.quizzes.length > 0) {
+      parsed.quizzes.forEach(quiz => {
+        const quizDiv = document.createElement("div");
+        quizDiv.className = "quiz-card";
+
+        const questionP = document.createElement("p");
+        questionP.className = "quiz-question";
+        questionP.textContent = quiz.question;
+        quizDiv.appendChild(questionP);
+
+        if (quiz.options && quiz.options.length > 0) {
+          const optionsDiv = document.createElement("div");
+          optionsDiv.className = "quiz-options";
+
+          quiz.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.className = "quiz-option-btn";
+            btn.textContent = opt;
+            btn.addEventListener("click", () => {
+              // Disable all options
+              optionsDiv.querySelectorAll('.quiz-option-btn').forEach(b => {
+                b.disabled = true;
+                b.classList.add('disabled');
+              });
+
+              const isCorrect = opt === quiz.correctAnswer;
+              btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+              // Show correct answer if wrong
+              if (!isCorrect) {
+                optionsDiv.querySelectorAll('.quiz-option-btn').forEach(b => {
+                  if (b.textContent === quiz.correctAnswer) b.classList.add('correct');
+                });
+              }
+
+              // Show explanation
+              const explDiv = document.createElement("div");
+              explDiv.className = `quiz-result ${isCorrect ? 'correct' : 'incorrect'}`;
+              explDiv.textContent = (isCorrect ? 'Correct! ' : 'Not quite. ') + (quiz.explanation || '');
+              quizDiv.appendChild(explDiv);
+
+              // Update SR data
+              const quality = isCorrect ? 4 : 1;
+              updateQuizScore(quality);
+
+              // Send follow-up
+              setTimeout(() => {
+                input.value = isCorrect ? "Correct! I got it right." : `I got it wrong. The answer was ${quiz.correctAnswer}.`;
+                sendMessage();
+              }, 1500);
+            });
+            optionsDiv.appendChild(btn);
+          });
+          quizDiv.appendChild(optionsDiv);
+        } else {
+          // Free recall — user types answer
+          const recallDiv = document.createElement("div");
+          recallDiv.className = "quiz-recall";
+          const recallInput = document.createElement("input");
+          recallInput.type = "text";
+          recallInput.className = "quiz-recall-input";
+          recallInput.placeholder = "Type your answer...";
+          const submitBtn = document.createElement("button");
+          submitBtn.className = "quiz-recall-submit";
+          submitBtn.textContent = "Check";
+          submitBtn.addEventListener("click", () => {
+            if (!recallInput.value.trim()) return;
+            input.value = `My answer: ${recallInput.value.trim()}`;
+            sendMessage();
+          });
+          recallInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") submitBtn.click();
+          });
+          recallDiv.appendChild(recallInput);
+          recallDiv.appendChild(submitBtn);
+          quizDiv.appendChild(recallDiv);
+        }
+
+        div.appendChild(quizDiv);
+      });
+    }
+
+    // Render learning path suggestion
+    if (!isReplay && parsed.learningPath) {
+      const pathDiv = document.createElement("div");
+      pathDiv.className = "learning-path-suggestion";
+      pathDiv.innerHTML = `<h4>Suggested learning path: ${parsed.learningPath.title}</h4>
+        <div class="path-topics">${(parsed.learningPath.topics || []).map((t, i) => `<span class="path-topic-item">${i + 1}. ${t}</span>`).join('')}</div>`;
+      div.appendChild(pathDiv);
+    }
+
     // Add actionable feedback buttons (only during active node teaching, Phase 4)
     const hasActiveNode = !isReplay && activeNodeIndex >= 0 && !parsed.options?.length && !text.match(/\[KNOWLEDGE_MAP\]/);
     if (hasActiveNode) {
@@ -433,6 +789,8 @@ function stripMapTags(text) {
     .replace(/\[TABLE\][\s\S]*?\[\/TABLE\]/g, '')
     .replace(/\[FLOWCHART\][\s\S]*?\[\/FLOWCHART\]/g, '')
     .replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/g, '')
+    .replace(/\[QUIZ\][\s\S]*?\[\/QUIZ\]/g, '')
+    .replace(/\[LEARNING_PATH\][\s\S]*?\[\/LEARNING_PATH\]/g, '')
     .trim();
 }
 
@@ -498,7 +856,33 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/, '').trim();
   }
 
-  return { cleanText, options, charts, tables, flowcharts };
+  let quizzes = [];
+  const quizRegex = /\[QUIZ\]([\s\S]*?)\[\/QUIZ\]/g;
+  let quizMatch;
+  while ((quizMatch = quizRegex.exec(cleanText)) !== null) {
+    try { quizzes.push(JSON.parse(quizMatch[1].trim())); } catch (e) { console.error('Failed to parse quiz JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[QUIZ\][\s\S]*?\[\/QUIZ\]/g, '').trim();
+
+  // Parse learning path suggestions
+  const pathMatch = cleanText.match(/\[LEARNING_PATH\]([\s\S]*?)\[\/LEARNING_PATH\]/);
+  let learningPath = null;
+  if (pathMatch) {
+    try {
+      learningPath = JSON.parse(pathMatch[1].trim());
+      saveLearningPath(learningPath);
+    } catch (e) {
+      // Try line-based format
+      const pathLines = pathMatch[1].trim().split('\n').filter(l => l.trim());
+      if (pathLines.length >= 2) {
+        learningPath = { title: pathLines[0].trim(), topics: pathLines.slice(1).map(l => l.replace(/^[\d\.\-\*]+\s*/, '').trim()) };
+        saveLearningPath(learningPath);
+      }
+    }
+    cleanText = cleanText.replace(/\[LEARNING_PATH\][\s\S]*?\[\/LEARNING_PATH\]/, '').trim();
+  }
+
+  return { cleanText, options, charts, tables, flowcharts, quizzes, learningPath };
 }
 
 function parseKnowledgeMap(content) {
@@ -544,6 +928,8 @@ function completeNode(name) {
   knowledgeMap.nodes.forEach(n => {
     if (n.type.toLowerCase() === name || n.label.toLowerCase().includes(name)) {
       nodeStates[n.type] = 'completed';
+      // Persist to learning data
+      recordNodeCompletion(knowledgeMap.root, n, currentConvoId);
     }
   });
 
@@ -554,6 +940,12 @@ function completeNode(name) {
   const nextPending = knowledgeMap.nodes.find(n => nodeStates[n.type] === 'pending');
   if (nextPending) {
     nodeStates[nextPending.type] = 'suggested';
+  }
+
+  // Check if all main nodes are completed — flag for path suggestion
+  const allCompleted = knowledgeMap.nodes.every(n => nodeStates[n.type] === 'completed');
+  if (allCompleted) {
+    topicFullyCompleted = true;
   }
 
   renderMap();
@@ -863,7 +1255,7 @@ async function sendMessage() {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, sessionId: currentConvoId }),
+      body: JSON.stringify({ messages, sessionId: currentConvoId, mode: quizMode ? 'quiz' : 'learn' }),
     });
 
     hideTyping();
@@ -936,8 +1328,11 @@ const knowledgeOverlay = document.getElementById("knowledge-overlay");
 const knowledgeOverlayClose = document.getElementById("knowledge-overlay-close");
 const knowledgeOverlayContent = document.getElementById("knowledge-overlay-content");
 
+let currentDashboardTab = 'overview';
+
 myKnowledgeBtn.addEventListener("click", () => {
-  renderKnowledgeOverlay();
+  currentDashboardTab = 'overview';
+  renderDashboard();
   knowledgeOverlay.classList.remove("hidden");
 });
 
@@ -945,14 +1340,112 @@ knowledgeOverlayClose.addEventListener("click", () => {
   knowledgeOverlay.classList.add("hidden");
 });
 
-function renderKnowledgeOverlay() {
+// Tab switching
+document.querySelectorAll('.overlay-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.overlay-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentDashboardTab = tab.dataset.tab;
+    renderDashboard();
+  });
+});
+
+function renderDashboard() {
+  if (currentDashboardTab === 'overview') renderOverviewTab();
+  else if (currentDashboardTab === 'topics') renderTopicsTab();
+  else if (currentDashboardTab === 'timeline') renderTimelineTab();
+}
+
+function renderOverviewTab() {
+  const data = loadLearningData();
+  const nodes = Object.values(data.nodes);
+  const totalNodes = nodes.length;
+  const topics = new Set(nodes.map(n => n.topic));
+  const dueCount = getDueNodes().length;
+  const avgQuizScore = getAvgQuizScore(data);
+
+  let html = '<div class="dashboard-overview">';
+
+  // Stats grid
+  html += '<div class="dashboard-stats">';
+  html += `<div class="dashboard-stat"><span class="dashboard-stat-value">${totalNodes}</span><span class="dashboard-stat-label">Nodes Learned</span></div>`;
+  html += `<div class="dashboard-stat"><span class="dashboard-stat-value">${topics.size}</span><span class="dashboard-stat-label">Topics</span></div>`;
+  html += `<div class="dashboard-stat"><span class="dashboard-stat-value">${data.streak.current}</span><span class="dashboard-stat-label">Day Streak</span></div>`;
+  html += `<div class="dashboard-stat"><span class="dashboard-stat-value">${data.streak.longest}</span><span class="dashboard-stat-label">Best Streak</span></div>`;
+  if (dueCount > 0) {
+    html += `<div class="dashboard-stat due"><span class="dashboard-stat-value">${dueCount}</span><span class="dashboard-stat-label">Due for Review</span></div>`;
+  }
+  if (avgQuizScore > 0) {
+    html += `<div class="dashboard-stat"><span class="dashboard-stat-value">${avgQuizScore.toFixed(1)}</span><span class="dashboard-stat-label">Avg Quiz Score</span></div>`;
+  }
+  html += '</div>';
+
+  // 30-day activity heatmap
+  html += '<div class="dashboard-heatmap-section">';
+  html += '<h3 class="dashboard-section-title">Last 30 days</h3>';
+  html += renderHeatmap(data);
+  html += '</div>';
+
+  if (totalNodes === 0) {
+    html += `<div class="knowledge-empty">
+      <p>No knowledge yet.</p>
+      <p class="knowledge-empty-sub">Start a conversation and complete nodes on the knowledge map to track what you've learned.</p>
+    </div>`;
+  }
+
+  html += '</div>';
+  knowledgeOverlayContent.innerHTML = html;
+}
+
+function getAvgQuizScore(data) {
+  const allScores = [];
+  Object.values(data.nodes).forEach(n => {
+    n.quizHistory.forEach(q => allScores.push(q.score));
+  });
+  if (allScores.length === 0) return 0;
+  return allScores.reduce((a, b) => a + b, 0) / allScores.length;
+}
+
+function renderHeatmap(data) {
+  const cellSize = 14;
+  const gap = 3;
+  const days = 30;
+  const width = days * (cellSize + gap);
+  let svg = `<svg class="heatmap" width="${width}" height="${cellSize + 20}" viewBox="0 0 ${width} ${cellSize + 20}">`;
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const activity = data.activity[dateStr];
+    const count = activity ? (activity.nodesCompleted + activity.nodesReviewed + activity.quizzesTaken) : 0;
+
+    let fill;
+    if (count === 0) fill = 'var(--bg-elevated)';
+    else if (count <= 2) fill = 'var(--accent-dim)';
+    else if (count <= 5) fill = 'var(--accent)';
+    else fill = 'var(--accent-text)';
+
+    const x = (days - 1 - i) * (cellSize + gap);
+    svg += `<rect x="${x}" y="0" width="${cellSize}" height="${cellSize}" rx="2" fill="${fill}"><title>${dateStr}: ${count} activities</title></rect>`;
+  }
+
+  // Labels
+  svg += `<text x="0" y="${cellSize + 14}" fill="var(--text-muted)" font-size="9" font-family="var(--font-sans)">30d ago</text>`;
+  svg += `<text x="${width - 30}" y="${cellSize + 14}" fill="var(--text-muted)" font-size="9" font-family="var(--font-sans)">Today</text>`;
+  svg += '</svg>';
+  return svg;
+}
+
+function renderTopicsTab() {
   const convos = loadConversations();
+  const data = loadLearningData();
   const topics = {};
 
   Object.values(convos).forEach(convo => {
     if (!convo.knowledgeMap || !convo.nodeStates) return;
     const root = convo.knowledgeMap.root || "Unknown";
-    if (!topics[root]) topics[root] = { completed: [], total: 0 };
+    if (!topics[root]) topics[root] = { completed: [], total: 0, dueCount: 0 };
 
     convo.knowledgeMap.nodes.forEach(node => {
       topics[root].total++;
@@ -962,13 +1455,19 @@ function renderKnowledgeOverlay() {
     });
   });
 
+  // Add due counts from learning data
+  const dueNodes = getDueNodes();
+  dueNodes.forEach(n => {
+    if (topics[n.topic]) topics[n.topic].dueCount++;
+  });
+
   const topicKeys = Object.keys(topics);
 
   if (topicKeys.length === 0) {
     knowledgeOverlayContent.innerHTML = `
       <div class="knowledge-empty">
-        <p>No knowledge yet.</p>
-        <p class="knowledge-empty-sub">Start a conversation and complete nodes on the knowledge map to track what you've learned.</p>
+        <p>No topics yet.</p>
+        <p class="knowledge-empty-sub">Start a conversation to begin tracking your learning.</p>
       </div>`;
     return;
   }
@@ -980,7 +1479,7 @@ function renderKnowledgeOverlay() {
     html += `<div class="knowledge-topic">
       <div class="knowledge-topic-header">
         <span class="knowledge-topic-name">${topic}</span>
-        <span class="knowledge-topic-progress">${t.completed.length}/${t.total} nodes &middot; ${pct}%</span>
+        <span class="knowledge-topic-progress">${t.completed.length}/${t.total} nodes &middot; ${pct}%${t.dueCount > 0 ? ` &middot; <span class="due-badge">${t.dueCount} due</span>` : ''}</span>
       </div>
       <div class="knowledge-progress-bar"><div class="knowledge-progress-fill" style="width:${pct}%"></div></div>`;
     if (t.completed.length > 0) {
@@ -992,6 +1491,40 @@ function renderKnowledgeOverlay() {
     }
     html += '</div>';
   });
+
+  knowledgeOverlayContent.innerHTML = html;
+}
+
+function renderTimelineTab() {
+  const data = loadLearningData();
+  const days = Object.keys(data.activity).sort().reverse();
+
+  if (days.length === 0) {
+    knowledgeOverlayContent.innerHTML = `
+      <div class="knowledge-empty">
+        <p>No activity yet.</p>
+        <p class="knowledge-empty-sub">Your learning activity will appear here as you complete nodes and take quizzes.</p>
+      </div>`;
+    return;
+  }
+
+  let html = '<div class="timeline">';
+  days.forEach(day => {
+    const a = data.activity[day];
+    const parts = [];
+    if (a.nodesCompleted > 0) parts.push(`${a.nodesCompleted} node${a.nodesCompleted > 1 ? 's' : ''} completed`);
+    if (a.nodesReviewed > 0) parts.push(`${a.nodesReviewed} reviewed`);
+    if (a.quizzesTaken > 0) parts.push(`${a.quizzesTaken} quiz${a.quizzesTaken > 1 ? 'zes' : ''}`);
+
+    const date = new Date(day + 'T00:00:00');
+    const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    html += `<div class="timeline-entry">
+      <span class="timeline-date">${formatted}</span>
+      <span class="timeline-detail">${parts.join(' &middot; ')}</span>
+    </div>`;
+  });
+  html += '</div>';
 
   knowledgeOverlayContent.innerHTML = html;
 }

@@ -119,9 +119,35 @@ concept
 └── misconception: common wrong assumptions
 [/EXPAND_MAP]
 
-The visual map will automatically show these as children of the parent node.`;
+The visual map will automatically show these as children of the parent node.
 
-async function callGemini(messages, model) {
+When ALL nodes in the knowledge map have been completed, congratulate the user and suggest a learning path of 3-5 related topics they could explore next. Format it using [LEARNING_PATH] and [/LEARNING_PATH] tags with JSON:
+
+[LEARNING_PATH]
+{"title":"Investment Fundamentals","topics":["How do stocks work?","What are mutual funds?","How does portfolio diversification work?"]}
+[/LEARNING_PATH]
+
+The app will save this as a learning path the user can continue later.`;
+
+const QUIZ_SYSTEM_PROMPT = `You are quizzing the user on a concept they previously learned. The user's first message will tell you the topic and concept.
+
+Generate a quick recall question to test their understanding. Format your response with:
+
+[QUIZ]
+{"question":"Your question here","type":"multiple_choice","options":["A","B","C","D"],"correctAnswer":"B","explanation":"Brief explanation of why this is correct"}
+[/QUIZ]
+
+Rules:
+- Ask ONE question at a time
+- For "multiple_choice" type: provide 4 options
+- For "true_false" type: options should be ["True","False"]
+- For "recall" type: no options needed, the user types a free answer
+- Vary the question types across interactions
+- After the user answers, tell them if they're correct, give the explanation, and ask if they want another question or want to move on
+- Keep questions focused and specific — test understanding, not trivia
+- If the user answers incorrectly, briefly explain and offer to explore the concept more deeply`;
+
+async function callGemini(messages, model, systemPrompt) {
   const geminiMessages = messages.map(m => ({
     role: m.role === 'user' ? 'user' : 'model',
     parts: [{ text: m.content }]
@@ -131,7 +157,7 @@ async function callGemini(messages, model) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      system_instruction: { parts: [{ text: systemPrompt }] },
       contents: geminiMessages,
       generationConfig: {
         temperature: 0.7,
@@ -150,10 +176,11 @@ async function callGemini(messages, model) {
 }
 
 app.post('/api/chat', async (req, res) => {
-  const { messages, sessionId } = req.body;
+  const { messages, sessionId, mode } = req.body;
+  const prompt = mode === 'quiz' ? QUIZ_SYSTEM_PROMPT : SYSTEM_PROMPT;
 
   try {
-    const reply = await callGemini(messages, MODEL);
+    const reply = await callGemini(messages, MODEL, prompt);
 
     // Log to Supabase if configured
     if (supabase && sessionId) {

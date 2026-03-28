@@ -679,6 +679,323 @@ header h1 {
   background: var(--bg-elevated);
 }
 
+/* ─── Welcome Stats ─── */
+.welcome-stats {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.welcome-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ─── Review Section ─── */
+.review-section {
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.review-heading {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.review-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.review-card:hover {
+  border-color: var(--accent-dim);
+  background: var(--bg-elevated);
+}
+
+.review-card-topic {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.review-card-node {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.review-card-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.review-more {
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* ─── Quiz UI ─── */
+.quiz-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.quiz-question {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 12px !important;
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quiz-option-btn {
+  display: block;
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.quiz-option-btn:hover:not(.disabled) {
+  border-color: var(--accent-dim);
+  background: var(--accent-muted);
+}
+
+.quiz-option-btn.disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.quiz-option-btn.correct {
+  border-color: var(--accent);
+  background: rgba(124, 152, 133, 0.15);
+  color: var(--accent-text);
+  opacity: 1;
+}
+
+.quiz-option-btn.incorrect {
+  border-color: #9b6e6e;
+  background: rgba(155, 110, 110, 0.15);
+  color: #d49a9a;
+  opacity: 1;
+}
+
+.quiz-result {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.quiz-result.correct {
+  background: rgba(124, 152, 133, 0.1);
+  color: var(--accent-text);
+  border: 1px solid var(--accent-dim);
+}
+
+.quiz-result.incorrect {
+  background: rgba(155, 110, 110, 0.1);
+  color: #d49a9a;
+  border: 1px solid #9b6e6e;
+}
+
+.quiz-recall {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.quiz-recall-input {
+  flex: 1;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.quiz-recall-input:focus {
+  border-color: var(--accent-dim);
+}
+
+.quiz-recall-submit {
+  background: var(--accent-dim);
+  color: var(--text);
+  border: none;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.quiz-recall-submit:hover {
+  background: var(--accent);
+}
+
+.quiz-start-btn {
+  display: block;
+  margin: 14px auto 0;
+  background: var(--accent-dim);
+  color: var(--text);
+  border: none;
+  border-radius: 4px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.quiz-start-btn:hover {
+  background: var(--accent);
+}
+
+/* ─── Learning Paths ─── */
+.paths-section {
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.path-card {
+  display: block;
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  margin-bottom: 6px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.path-card:hover {
+  border-color: var(--accent-dim);
+  background: var(--bg-elevated);
+}
+
+.path-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.path-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.path-card-progress {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.path-card .knowledge-progress-bar {
+  margin-bottom: 6px;
+}
+
+.path-card-next {
+  font-size: 12px;
+  color: var(--accent-text);
+}
+
+.learning-path-suggestion {
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-dim);
+  border-radius: 4px;
+  padding: 14px;
+  margin-top: 16px;
+}
+
+.learning-path-suggestion h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-text);
+  margin-bottom: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.path-topics {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.path-topic-item {
+  font-size: 13px;
+  color: var(--text-dim);
+  padding: 4px 0;
+}
+
 /* ─── Feedback Buttons ─── */
 .msg-feedback {
   display: flex;
@@ -992,6 +1309,130 @@ header h1 {
 #my-knowledge-btn:hover {
   border-color: var(--accent-dim);
   background: var(--accent-muted);
+}
+
+/* ─── Dashboard Tabs ─── */
+#knowledge-overlay-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  padding: 0 20px;
+}
+
+.overlay-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.overlay-tab:hover {
+  color: var(--text-dim);
+}
+
+.overlay-tab.active {
+  color: var(--accent-text);
+  border-bottom-color: var(--accent);
+}
+
+/* ─── Dashboard Overview ─── */
+.dashboard-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.dashboard-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px 20px;
+  min-width: 100px;
+}
+
+.dashboard-stat.due {
+  border-color: var(--accent-dim);
+}
+
+.dashboard-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dashboard-stat.due .dashboard-stat-value {
+  color: var(--accent-text);
+}
+
+.dashboard-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.dashboard-heatmap-section {
+  margin-bottom: 24px;
+}
+
+.heatmap {
+  width: 100%;
+  max-width: 100%;
+}
+
+.due-badge {
+  color: var(--accent-text);
+  font-weight: 500;
+}
+
+/* ─── Timeline ─── */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--bg-elevated);
+}
+
+.timeline-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.timeline-detail {
+  font-size: 13px;
+  color: var(--text-dim);
 }
 
 /* ─── Knowledge Overlay ─── */

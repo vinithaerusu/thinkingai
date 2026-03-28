@@ -64,24 +64,18 @@
       <span>My Knowledge</span>
       <button id="knowledge-overlay-close">&times;</button>
     </div>
+    <div id="knowledge-overlay-tabs">
+      <button class="overlay-tab active" data-tab="overview">Overview</button>
+      <button class="overlay-tab" data-tab="topics">Topics</button>
+      <button class="overlay-tab" data-tab="timeline">Timeline</button>
+    </div>
     <div id="knowledge-overlay-content"></div>
   </div>
 
   <div id="main">
     <div id="chat-column">
       <div id="chat">
-        <div class="welcome">
-          <h2>Learn anything deeply</h2>
-          <p>I teach through real examples and let you find the patterns yourself. It sticks better than being told. Just type what you want to learn.</p>
-          <div class="suggested-topics">
-            <button class="topic-btn" data-topic="How does compound interest work?">Compound interest</button>
-            <button class="topic-btn" data-topic="Explain how neural networks learn">Neural networks</button>
-            <button class="topic-btn" data-topic="How does the immune system fight infections?">Immune system</button>
-            <button class="topic-btn" data-topic="What is supply and demand in economics?">Supply &amp; demand</button>
-            <button class="topic-btn" data-topic="How does encryption keep data secure?">Encryption</button>
-            <button class="topic-btn" data-topic="How do black holes form?">Black holes</button>
-          </div>
-        </div>
+        <!-- Welcome screen rendered by app.js -->
       </div>
 
       <div id="input-area">
