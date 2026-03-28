@@ -67,7 +67,13 @@ header {
 
 #sidebar-toggle:hover { color: var(--text); }
 
-#new-chat-btn {
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#new-chat-btn, #map-toggle {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   color: var(--accent-text);
@@ -80,9 +86,13 @@ header {
   transition: border-color 0.15s, background 0.15s;
 }
 
-#new-chat-btn:hover {
+#new-chat-btn:hover, #map-toggle:hover {
   border-color: var(--accent-dim);
   background: var(--bg-elevated);
+}
+
+#map-toggle.hidden {
+  display: none;
 }
 
 .logo {
@@ -731,29 +741,6 @@ header h1 {
   min-height: 200px;
 }
 
-#map-toggle {
-  position: fixed;
-  right: 20px;
-  top: 12px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  color: var(--accent-text);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  z-index: 10;
-  transition: opacity 0.15s;
-  font-family: inherit;
-}
-
-#map-toggle:hover { opacity: 0.85; }
-
-#map-toggle.hidden {
-  display: none;
-}
-
 /* ─── SVG Map Nodes ─── */
 .map-node rect {
   rx: 4;
@@ -891,10 +878,6 @@ header h1 {
     width: 100vw;
   }
 
-  #map-toggle {
-    right: 12px;
-    top: 12px;
-  }
 }
 
 @media (max-width: 600px) {
