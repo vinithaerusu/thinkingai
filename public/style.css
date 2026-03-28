@@ -73,6 +73,14 @@ header h1 {
   overflow: hidden;
 }
 
+/* ─── Chat Column ─── */
+#chat-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 /* ─── Chat Area ─── */
 #chat {
   flex: 1;

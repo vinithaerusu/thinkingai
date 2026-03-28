@@ -26,11 +26,22 @@
   </header>
 
   <div id="main">
-    <div id="chat">
-      <div class="welcome">
-        <h2>Learn anything</h2>
-        <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
+    <div id="chat-column">
+      <div id="chat">
+        <div class="welcome">
+          <h2>Learn anything</h2>
+          <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
+        </div>
       </div>
+
+      <div id="input-area">
+        <div id="input-wrap">
+          <textarea id="input" rows="1" placeholder="What do you want to figure out?" autofocus></textarea>
+          <button id="send">Send</button>
+        </div>
+      </div>
+
+      <p class="disclaimer">Conversations are used to improve the experience. No personal data is collected.</p>
     </div>
 
     <div id="map-panel" class="hidden">
@@ -48,15 +59,6 @@
   </div>
 
   <button id="map-toggle" class="hidden">Map</button>
-
-  <div id="input-area">
-    <div id="input-wrap">
-      <textarea id="input" rows="1" placeholder="What do you want to figure out?" autofocus></textarea>
-      <button id="send">Send</button>
-    </div>
-  </div>
-
-  <p class="disclaimer">Conversations are used to improve the experience. No personal data is collected.</p>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
