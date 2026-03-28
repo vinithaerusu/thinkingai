@@ -24,7 +24,10 @@ function addMsg(role, text) {
   div.className = `msg ${role === "user" ? "user" : "ai"}`;
 
   if (role === "user") {
-    div.textContent = text;
+    const bubble = document.createElement("div");
+    bubble.className = "user-bubble";
+    bubble.textContent = text;
+    div.appendChild(bubble);
   } else {
     // Parse knowledge map tags before rendering
     const parsed = parseMapTags(text);

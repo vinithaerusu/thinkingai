@@ -82,7 +82,6 @@ header h1 {
   flex-direction: column;
   gap: 20px;
   scroll-behavior: smooth;
-  align-items: center;
 }
 
 #chat::-webkit-scrollbar { width: 4px; }
@@ -106,14 +105,17 @@ header h1 {
 }
 
 .msg.user {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.msg.user .user-bubble {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   padding: 10px 14px;
   border-radius: 4px;
   color: var(--text);
   max-width: 520px;
-  width: auto;
-  margin: 0 0 0 auto;
 }
 
 .msg.ai {
