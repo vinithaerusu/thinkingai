@@ -109,9 +109,11 @@ header h1 {
   border: 1px solid var(--border);
   padding: 10px 14px;
   border-radius: 4px;
-  align-self: flex-end;
   color: var(--text);
   max-width: 520px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: 0;
 }
 
 .msg.ai {
