@@ -289,8 +289,9 @@ function parseKnowledgeMap(content) {
   nodes.forEach(n => { nodeStates[n.type] = 'pending'; });
   activeNodeIndex = -1;
 
-  // Show the map panel and toggle
+  // Show the map panel expanded by default
   mapPanel.classList.remove('hidden');
+  mapPanel.classList.add('expanded');
   mapToggle.classList.remove('hidden');
   renderMap();
 }
