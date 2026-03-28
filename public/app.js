@@ -40,14 +40,29 @@ function addMsg(role, text) {
         btn.className = "option-btn";
         btn.innerHTML = `<span class="option-num">${i + 1}</span> ${opt}`;
         btn.addEventListener("click", () => {
-          // Remove all option containers to prevent re-clicking
           document.querySelectorAll('.options-container').forEach(el => el.remove());
-          // Send the selected option as a message
           input.value = opt;
           sendMessage();
         });
         optionsDiv.appendChild(btn);
       });
+
+      // Add "Other" option with custom input
+      const otherDiv = document.createElement("div");
+      otherDiv.className = "option-other";
+      const otherInput = document.createElement("input");
+      otherInput.type = "text";
+      otherInput.className = "option-other-input";
+      otherInput.placeholder = "Other (type your answer)";
+      otherInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && otherInput.value.trim()) {
+          document.querySelectorAll('.options-container').forEach(el => el.remove());
+          input.value = otherInput.value.trim();
+          sendMessage();
+        }
+      });
+      otherDiv.appendChild(otherInput);
+      optionsDiv.appendChild(otherDiv);
 
       div.appendChild(optionsDiv);
     }

@@ -141,6 +141,31 @@ header .tag {
   flex-shrink: 0;
 }
 
+.option-other {
+  margin-top: 4px;
+}
+
+.option-other-input {
+  width: 100%;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #d4d4d4;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.option-other-input:focus {
+  border-color: #5a5aff;
+}
+
+.option-other-input::placeholder {
+  color: #555;
+}
+
 .typing {
   max-width: 680px;
   width: 100%;
