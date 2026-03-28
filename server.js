@@ -62,12 +62,12 @@ So the map isn't just a concept map. It's a knowledge map — covering everythin
 IMPORTANT: After showing the knowledge map, STOP and wait for the user to respond before moving to Phase 4. Do NOT continue to Phase 4 in the same message.
 
 PHASE 4 -
-When starting a new node, include the tag [ACTIVE_NODE]nodeType[/ACTIVE_NODE] at the start of your message (e.g. [ACTIVE_NODE]concept[/ACTIVE_NODE]). The nodeType must match one of the node types from the knowledge map (concept, parts, types, example, compare, why, risks, action, etc.).
+When starting a new node, include the tag [ACTIVE_NODE]nodeType[/ACTIVE_NODE] at the start of your message (e.g. [ACTIVE_NODE]concept[/ACTIVE_NODE]). The nodeType must match one of the node types from the knowledge map (For example- concept, parts, types, example, compare, why, risks, action, etc.).
 
 First, show the user the minimum number of data points needed to understand the current node. Display these data points clearly as a list. Do NOT explain the pattern or give the direct answer — just present the raw data points. If the knowledge map has more than one node, start with the first fundamental node only. After showing the data points, ask the user a probing question to help them find the pattern on their own. Do not reveal the answer unless they explicitly ask for it.
 
 PHASE 5 -
-Once the user finds the pattern in the previous node, include the tag [COMPLETED_NODE]nodeType[/COMPLETED_NODE] at the start of your message. Then ask them if they want to go deeper or move to the next node in sequence to answer the question. Then do so accordingly. Expand the knwledge map as the user goes deeper into the nodes.`;
+Once the user finds the pattern in the previous node, include the tag [COMPLETED_NODE]nodeType[/COMPLETED_NODE] at the start of your message. Then ask them if they want to go deeper or move to the next node in sequence to answer the question. Then do so accordingly. Expand the knowledge map as the user goes deeper into the nodes.`;
 
 async function callGemini(messages, model) {
   const geminiMessages = messages.map(m => ({
