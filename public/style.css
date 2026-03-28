@@ -73,7 +73,7 @@ header {
   gap: 8px;
 }
 
-#new-chat-btn, #map-toggle {
+#map-toggle {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   color: var(--accent-text);
@@ -86,7 +86,7 @@ header {
   transition: border-color 0.15s, background 0.15s;
 }
 
-#new-chat-btn:hover, #map-toggle:hover {
+#map-toggle:hover {
   border-color: var(--accent-dim);
   background: var(--bg-elevated);
 }
@@ -130,7 +130,7 @@ header h1 {
 }
 
 #sidebar-header {
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   font-size: 11px;
   font-weight: 600;
@@ -138,6 +138,56 @@ header h1 {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#new-chat-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--accent-text);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+#new-chat-btn:hover {
+  border-color: var(--accent-dim);
+  background: var(--accent-muted);
+}
+
+#sidebar-search {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#sidebar-search-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+#sidebar-search-input:focus {
+  border-color: var(--accent-dim);
+}
+
+#sidebar-search-input::placeholder {
+  color: var(--text-muted);
 }
 
 #sidebar-list {
@@ -845,6 +895,44 @@ header h1 {
   fill: var(--text-muted);
   text-anchor: middle;
   dominant-baseline: central;
+}
+
+/* ─── Delete Confirmation ─── */
+.delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.delete-confirm-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.delete-confirm-yes {
+  color: #e06060;
+  border-color: #4a2a2a;
+}
+
+.delete-confirm-yes:hover {
+  background: rgba(224, 96, 96, 0.12);
+  border-color: #e06060;
+}
+
+.delete-confirm-no {
+  color: var(--text-dim);
+}
+
+.delete-confirm-no:hover {
+  background: var(--bg-elevated);
+  border-color: var(--text-muted);
 }
 
 /* ─── Responsive ─── */

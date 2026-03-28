@@ -9,6 +9,7 @@ const mapSvg = document.getElementById("map-svg");
 const sidebar = document.getElementById("sidebar");
 const sidebarToggle = document.getElementById("sidebar-toggle");
 const sidebarList = document.getElementById("sidebar-list");
+const sidebarSearchInput = document.getElementById("sidebar-search-input");
 const newChatBtn = document.getElementById("new-chat-btn");
 
 // ─── Persistence ───
@@ -141,9 +142,47 @@ function deleteConversation(id) {
   }
 }
 
+function showDeleteConfirm(item, convoId) {
+  // Remove any existing confirmations
+  document.querySelectorAll('.delete-confirm').forEach(el => el.remove());
+  document.querySelectorAll('.sidebar-item-delete.confirming').forEach(el => el.classList.remove('confirming'));
+
+  const delBtn = item.querySelector('.sidebar-item-delete');
+  delBtn.classList.add('confirming');
+  delBtn.style.display = 'none';
+
+  const confirm = document.createElement("div");
+  confirm.className = "delete-confirm";
+
+  const yes = document.createElement("button");
+  yes.className = "delete-confirm-btn delete-confirm-yes";
+  yes.textContent = "Delete";
+  yes.addEventListener("click", (e) => {
+    e.stopPropagation();
+    deleteConversation(convoId);
+  });
+
+  const no = document.createElement("button");
+  no.className = "delete-confirm-btn delete-confirm-no";
+  no.textContent = "Cancel";
+  no.addEventListener("click", (e) => {
+    e.stopPropagation();
+    confirm.remove();
+    delBtn.style.display = '';
+    delBtn.classList.remove('confirming');
+  });
+
+  confirm.appendChild(yes);
+  confirm.appendChild(no);
+  item.appendChild(confirm);
+}
+
 function renderSidebar() {
   const convos = loadConversations();
-  const sorted = Object.values(convos).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  const searchQuery = (sidebarSearchInput.value || "").trim().toLowerCase();
+  const sorted = Object.values(convos)
+    .filter(c => !searchQuery || (c.title || "").toLowerCase().includes(searchQuery))
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
   sidebarList.innerHTML = "";
   sorted.forEach(convo => {
@@ -160,7 +199,7 @@ function renderSidebar() {
     del.innerHTML = "&times;";
     del.addEventListener("click", (e) => {
       e.stopPropagation();
-      deleteConversation(convo.id);
+      showDeleteConfirm(item, convo.id);
     });
     item.appendChild(del);
 
@@ -873,6 +912,11 @@ input.addEventListener("keydown", (e) => {
 input.addEventListener("input", () => {
   input.style.height = "auto";
   input.style.height = Math.min(input.scrollHeight, 120) + "px";
+});
+
+// ─── Search ───
+sidebarSearchInput.addEventListener("input", () => {
+  renderSidebar();
 });
 
 // ─── Init ───
