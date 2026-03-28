@@ -6,17 +6,183 @@ const mapToggle = document.getElementById("map-toggle");
 const mapClose = document.getElementById("map-close");
 const mapExpand = document.getElementById("map-expand");
 const mapSvg = document.getElementById("map-svg");
+const sidebar = document.getElementById("sidebar");
+const sidebarToggle = document.getElementById("sidebar-toggle");
+const sidebarList = document.getElementById("sidebar-list");
+const newChatBtn = document.getElementById("new-chat-btn");
 
-const sessionId = crypto.randomUUID();
+// ─── Persistence ───
+const STORAGE_KEY = "aux_conversations";
+
+function loadConversations() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch { return {}; }
+}
+
+function saveConversations(convos) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(convos));
+}
+
+function saveCurrentConversation() {
+  if (messages.length === 0) return;
+  const convos = loadConversations();
+  convos[currentConvoId] = {
+    id: currentConvoId,
+    title: convoTitle,
+    messages: messages,
+    knowledgeMap: knowledgeMap,
+    nodeStates: nodeStates,
+    updatedAt: Date.now()
+  };
+  saveConversations(convos);
+  renderSidebar();
+}
+
+// ─── State ───
+let currentConvoId = crypto.randomUUID();
+let convoTitle = "";
 let messages = [];
 let sending = false;
-
-// Knowledge map state
-let knowledgeMap = null; // { root: string, nodes: [{ type, label, children: [] }] }
-let nodeStates = {}; // { type: 'pending' | 'active' | 'completed' }
+let knowledgeMap = null;
+let nodeStates = {};
 let activeNodeIndex = -1;
 
-function addMsg(role, text) {
+// ─── Sidebar ───
+sidebarToggle.addEventListener("click", () => {
+  sidebar.classList.toggle("hidden");
+});
+
+newChatBtn.addEventListener("click", () => {
+  startNewConversation();
+});
+
+function startNewConversation() {
+  // Save current before switching
+  saveCurrentConversation();
+
+  currentConvoId = crypto.randomUUID();
+  convoTitle = "";
+  messages = [];
+  knowledgeMap = null;
+  nodeStates = {};
+  activeNodeIndex = -1;
+
+  // Reset UI
+  chat.innerHTML = `
+    <div class="welcome">
+      <h2>Learn anything</h2>
+      <p>I show you the right examples and let you find the pattern yourself. It sticks better than being told. Just type what you want to understand.</p>
+      <div class="suggested-topics">
+        <button class="topic-btn" data-topic="How does compound interest work?">Compound interest</button>
+        <button class="topic-btn" data-topic="Explain how neural networks learn">Neural networks</button>
+        <button class="topic-btn" data-topic="How does the immune system fight infections?">Immune system</button>
+        <button class="topic-btn" data-topic="What is supply and demand in economics?">Supply &amp; demand</button>
+        <button class="topic-btn" data-topic="How does encryption keep data secure?">Encryption</button>
+        <button class="topic-btn" data-topic="How do black holes form?">Black holes</button>
+      </div>
+    </div>`;
+  bindTopicButtons();
+
+  mapPanel.classList.add("hidden");
+  mapPanel.classList.remove("expanded");
+  mapToggle.classList.add("hidden");
+  mapSvg.innerHTML = "";
+
+  renderSidebar();
+  input.focus();
+}
+
+function loadConversation(id) {
+  saveCurrentConversation();
+
+  const convos = loadConversations();
+  const convo = convos[id];
+  if (!convo) return;
+
+  currentConvoId = convo.id;
+  convoTitle = convo.title || "";
+  messages = convo.messages || [];
+  knowledgeMap = convo.knowledgeMap || null;
+  nodeStates = convo.nodeStates || {};
+  activeNodeIndex = -1;
+
+  // Rebuild chat UI
+  chat.innerHTML = "";
+  messages.forEach(m => {
+    addMsg(m.role === "user" ? "user" : "ai", m.content, true);
+  });
+
+  // Restore map
+  if (knowledgeMap) {
+    mapPanel.classList.remove("hidden");
+    mapPanel.classList.add("expanded");
+    mapToggle.classList.remove("hidden");
+    renderMap();
+  } else {
+    mapPanel.classList.add("hidden");
+    mapPanel.classList.remove("expanded");
+    mapToggle.classList.add("hidden");
+    mapSvg.innerHTML = "";
+  }
+
+  renderSidebar();
+  input.focus();
+}
+
+function deleteConversation(id) {
+  const convos = loadConversations();
+  delete convos[id];
+  saveConversations(convos);
+
+  if (id === currentConvoId) {
+    startNewConversation();
+  } else {
+    renderSidebar();
+  }
+}
+
+function renderSidebar() {
+  const convos = loadConversations();
+  const sorted = Object.values(convos).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+  sidebarList.innerHTML = "";
+  sorted.forEach(convo => {
+    const item = document.createElement("div");
+    item.className = `sidebar-item${convo.id === currentConvoId ? " active" : ""}`;
+
+    const title = document.createElement("span");
+    title.className = "sidebar-item-title";
+    title.textContent = convo.title || "New conversation";
+    item.appendChild(title);
+
+    const del = document.createElement("button");
+    del.className = "sidebar-item-delete";
+    del.innerHTML = "&times;";
+    del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      deleteConversation(convo.id);
+    });
+    item.appendChild(del);
+
+    item.addEventListener("click", () => loadConversation(convo.id));
+    sidebarList.appendChild(item);
+  });
+}
+
+// ─── Suggested Topics ───
+function bindTopicButtons() {
+  document.querySelectorAll(".topic-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      input.value = btn.dataset.topic;
+      sendMessage();
+    });
+  });
+}
+bindTopicButtons();
+
+// ─── Messages ───
+function addMsg(role, text, isReplay) {
   const welcome = chat.querySelector(".welcome");
   if (welcome) welcome.remove();
 
@@ -30,11 +196,11 @@ function addMsg(role, text) {
     div.appendChild(bubble);
   } else {
     // Parse knowledge map tags before rendering
-    const parsed = parseMapTags(text);
+    const parsed = isReplay ? { cleanText: stripMapTags(text), options: [], charts: [], tables: [], flowcharts: [] } : parseMapTags(text);
     div.innerHTML = renderMarkdown(parsed.cleanText);
 
-    // Render options as clickable buttons
-    if (parsed.options && parsed.options.length > 0) {
+    // Render options as clickable buttons (only for live messages)
+    if (!isReplay && parsed.options && parsed.options.length > 0) {
       const optionsDiv = document.createElement("div");
       optionsDiv.className = "options-container";
 
@@ -50,7 +216,6 @@ function addMsg(role, text) {
         optionsDiv.appendChild(btn);
       });
 
-      // Add "Other" option with custom input
       const otherDiv = document.createElement("div");
       otherDiv.className = "option-other";
       const otherInput = document.createElement("input");
@@ -66,7 +231,6 @@ function addMsg(role, text) {
       });
       otherDiv.appendChild(otherInput);
       optionsDiv.appendChild(otherDiv);
-
       div.appendChild(optionsDiv);
     }
 
@@ -176,6 +340,36 @@ function addMsg(role, text) {
         div.appendChild(wrapper);
       });
     }
+
+    // Add feedback buttons
+    const feedbackDiv = document.createElement("div");
+    feedbackDiv.className = "msg-feedback";
+
+    const thumbUp = document.createElement("button");
+    thumbUp.className = "feedback-btn";
+    thumbUp.innerHTML = "&#x1F44D;";
+    thumbUp.title = "Helpful";
+
+    const thumbDown = document.createElement("button");
+    thumbDown.className = "feedback-btn";
+    thumbDown.innerHTML = "&#x1F44E;";
+    thumbDown.title = "Not helpful";
+
+    thumbUp.addEventListener("click", () => {
+      thumbUp.classList.toggle("selected");
+      thumbDown.classList.remove("selected");
+      feedbackDiv.classList.add("voted");
+    });
+
+    thumbDown.addEventListener("click", () => {
+      thumbDown.classList.toggle("selected");
+      thumbUp.classList.remove("selected");
+      feedbackDiv.classList.add("voted");
+    });
+
+    feedbackDiv.appendChild(thumbUp);
+    feedbackDiv.appendChild(thumbDown);
+    div.appendChild(feedbackDiv);
   }
 
   chat.appendChild(div);
@@ -189,10 +383,23 @@ function addMsg(role, text) {
   return div;
 }
 
+// Strip map/chart/table/flowchart/option tags for replay (don't re-parse map state)
+function stripMapTags(text) {
+  return text
+    .replace(/\[KNOWLEDGE_MAP\][\s\S]*?\[\/KNOWLEDGE_MAP\]/g, '')
+    .replace(/\[ACTIVE_NODE\].*?\[\/ACTIVE_NODE\]/g, '')
+    .replace(/\[COMPLETED_NODE\].*?\[\/COMPLETED_NODE\]/g, '')
+    .replace(/\[EXPAND_MAP\][\s\S]*?\[\/EXPAND_MAP\]/g, '')
+    .replace(/\[CHART\][\s\S]*?\[\/CHART\]/g, '')
+    .replace(/\[TABLE\][\s\S]*?\[\/TABLE\]/g, '')
+    .replace(/\[FLOWCHART\][\s\S]*?\[\/FLOWCHART\]/g, '')
+    .replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/g, '')
+    .trim();
+}
+
 function parseMapTags(text) {
   let cleanText = text;
 
-  // Parse [KNOWLEDGE_MAP]...[/KNOWLEDGE_MAP]
   const mapMatch = text.match(/\[KNOWLEDGE_MAP\]([\s\S]*?)\[\/KNOWLEDGE_MAP\]/);
   if (mapMatch) {
     const mapContent = mapMatch[1].trim();
@@ -200,7 +407,6 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[KNOWLEDGE_MAP\][\s\S]*?\[\/KNOWLEDGE_MAP\]/, '').trim();
   }
 
-  // Parse [ACTIVE_NODE]...[/ACTIVE_NODE]
   const activeMatch = text.match(/\[ACTIVE_NODE\](.*?)\[\/ACTIVE_NODE\]/);
   if (activeMatch) {
     const nodeName = activeMatch[1].trim().toLowerCase();
@@ -208,7 +414,6 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[ACTIVE_NODE\].*?\[\/ACTIVE_NODE\]/, '').trim();
   }
 
-  // Parse [COMPLETED_NODE]...[/COMPLETED_NODE]
   const completedMatch = text.match(/\[COMPLETED_NODE\](.*?)\[\/COMPLETED_NODE\]/);
   if (completedMatch) {
     const nodeName = completedMatch[1].trim().toLowerCase();
@@ -216,7 +421,6 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[COMPLETED_NODE\].*?\[\/COMPLETED_NODE\]/, '').trim();
   }
 
-  // Parse [EXPAND_MAP]...[/EXPAND_MAP]
   const expandMatch = text.match(/\[EXPAND_MAP\]([\s\S]*?)\[\/EXPAND_MAP\]/);
   if (expandMatch) {
     const expandContent = expandMatch[1].trim();
@@ -224,33 +428,22 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[EXPAND_MAP\][\s\S]*?\[\/EXPAND_MAP\]/, '').trim();
   }
 
-  // Parse [CHART]...[/CHART]
   let charts = [];
   const chartRegex = /\[CHART\]([\s\S]*?)\[\/CHART\]/g;
   let chartMatch;
   while ((chartMatch = chartRegex.exec(cleanText)) !== null) {
-    try {
-      charts.push(JSON.parse(chartMatch[1].trim()));
-    } catch (e) {
-      console.error('Failed to parse chart JSON:', e);
-    }
+    try { charts.push(JSON.parse(chartMatch[1].trim())); } catch (e) { console.error('Failed to parse chart JSON:', e); }
   }
   cleanText = cleanText.replace(/\[CHART\][\s\S]*?\[\/CHART\]/g, '').trim();
 
-  // Parse [TABLE]...[/TABLE]
   let tables = [];
   const tableRegex = /\[TABLE\]([\s\S]*?)\[\/TABLE\]/g;
   let tableMatch;
   while ((tableMatch = tableRegex.exec(cleanText)) !== null) {
-    try {
-      tables.push(JSON.parse(tableMatch[1].trim()));
-    } catch (e) {
-      console.error('Failed to parse table JSON:', e);
-    }
+    try { tables.push(JSON.parse(tableMatch[1].trim())); } catch (e) { console.error('Failed to parse table JSON:', e); }
   }
   cleanText = cleanText.replace(/\[TABLE\][\s\S]*?\[\/TABLE\]/g, '').trim();
 
-  // Parse [FLOWCHART]...[/FLOWCHART]
   let flowcharts = [];
   const flowRegex = /\[FLOWCHART\]([\s\S]*?)\[\/FLOWCHART\]/g;
   let flowMatch;
@@ -259,7 +452,6 @@ function parseMapTags(text) {
   }
   cleanText = cleanText.replace(/\[FLOWCHART\][\s\S]*?\[\/FLOWCHART\]/g, '').trim();
 
-  // Parse [OPTIONS]...[/OPTIONS]
   let options = [];
   const optionsMatch = cleanText.match(/\[OPTIONS\]([\s\S]*?)\[\/OPTIONS\]/);
   if (optionsMatch) {
@@ -292,7 +484,6 @@ function parseKnowledgeMap(content) {
   nodes.forEach(n => { nodeStates[n.type] = 'pending'; });
   activeNodeIndex = -1;
 
-  // Show the map panel expanded by default
   mapPanel.classList.remove('hidden');
   mapPanel.classList.add('expanded');
   mapToggle.classList.remove('hidden');
@@ -325,21 +516,18 @@ function expandNode(content) {
   const lines = content.split('\n').filter(l => l.trim());
   if (lines.length === 0) return;
 
-  // First line is the parent node type
   const parentType = lines[0].trim().toLowerCase();
   const parent = knowledgeMap.nodes.find(n =>
     n.type.toLowerCase() === parentType || n.label.toLowerCase().includes(parentType)
   );
   if (!parent) return;
 
-  // Parse child nodes
   for (let i = 1; i < lines.length; i++) {
     const match = lines[i].match(/[├└]──\s*(\w+):\s*(.+)/);
     if (match) {
       const childType = match[1].trim();
       const childLabel = match[2].trim();
       const childKey = parent.type + '.' + childType;
-      // Avoid duplicates
       if (!parent.children.find(c => c.type === childType)) {
         parent.children.push({ type: childType, label: childLabel, children: [], parentType: parent.type });
         nodeStates[childKey] = 'pending';
@@ -364,10 +552,7 @@ function renderMap() {
   const childVGap = 40;
   const hGap = 16;
 
-  // Calculate layout — account for expanded children
   const cols = Math.min(nodes.length, 2);
-
-  // Calculate row heights (a row is taller if a node in it has children)
   const rowCount = Math.ceil(nodes.length / cols);
   const rowHeights = [];
   for (let r = 0; r < rowCount; r++) {
@@ -389,26 +574,19 @@ function renderMap() {
   mapSvg.style.height = totalH + 'px';
   mapSvg.innerHTML = '';
 
-  // Root node
   const rootX = centerX - rootW / 2;
   const rootY = 16;
   const rootCenterY = rootY + rootH / 2;
 
   const rootGroup = createSvgElement('g', { class: 'map-node root' });
-  rootGroup.appendChild(createSvgElement('rect', {
-    x: rootX, y: rootY, width: rootW, height: rootH
-  }));
-  rootGroup.appendChild(createSvgElement('text', {
-    x: centerX, y: rootCenterY
-  }, knowledgeMap.root));
+  rootGroup.appendChild(createSvgElement('rect', { x: rootX, y: rootY, width: rootW, height: rootH }));
+  rootGroup.appendChild(createSvgElement('text', { x: centerX, y: rootCenterY }, knowledgeMap.root));
   mapSvg.appendChild(rootGroup);
 
-  // Child nodes
   nodes.forEach((node, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
 
-    // Calculate Y position based on cumulative row heights
     let ny = rootY + rootH + vGap;
     for (let r = 0; r < row; r++) {
       ny += rowHeights[r] + vGap;
@@ -421,7 +599,6 @@ function renderMap() {
 
     const state = nodeStates[node.type] || 'pending';
 
-    // Line from root to node
     const lineClass = state === 'completed' ? 'map-line completed' : state === 'active' ? 'map-line active' : 'map-line';
     const line = createSvgElement('path', {
       d: `M ${centerX} ${rootY + rootH} C ${centerX} ${rootY + rootH + vGap / 2}, ${ncx} ${ny - vGap / 2}, ${ncx} ${ny}`,
@@ -429,23 +606,14 @@ function renderMap() {
     });
     mapSvg.insertBefore(line, rootGroup);
 
-    // Node group
     const group = createSvgElement('g', { class: `map-node ${state} clickable` });
     group.style.cursor = 'pointer';
-    group.appendChild(createSvgElement('rect', {
-      x: nx, y: ny, width: nodeW, height: nodeH
-    }));
+    group.appendChild(createSvgElement('rect', { x: nx, y: ny, width: nodeW, height: nodeH }));
 
-    // Type label (small, above)
-    group.appendChild(createSvgElement('text', {
-      x: ncx, y: ncy - 8, class: 'map-node-type'
-    }, node.type));
+    group.appendChild(createSvgElement('text', { x: ncx, y: ncy - 8, class: 'map-node-type' }, node.type));
 
-    // Value label
     const label = node.label.length > 28 ? node.label.slice(0, 26) + '...' : node.label;
-    group.appendChild(createSvgElement('text', {
-      x: ncx, y: ncy + 8
-    }, label));
+    group.appendChild(createSvgElement('text', { x: ncx, y: ncy + 8 }, label));
 
     group.addEventListener('click', () => {
       const msg = state === 'completed'
@@ -457,7 +625,6 @@ function renderMap() {
 
     mapSvg.appendChild(group);
 
-    // Render children if expanded
     if (node.children.length > 0) {
       let childY = ny + nodeH + childVGap;
 
@@ -469,28 +636,20 @@ function renderMap() {
         const ccx = ncx;
         const ccy = childY + childH / 2;
 
-        // Line from parent to child
         const childLineClass = childState === 'completed' ? 'map-line completed' : childState === 'active' ? 'map-line active' : 'map-line';
         mapSvg.appendChild(createSvgElement('path', {
           d: `M ${ncx} ${ny + nodeH} C ${ncx} ${ny + nodeH + childVGap / 2}, ${ccx} ${childY - childVGap / 2}, ${ccx} ${childY}`,
           class: childLineClass
         }));
 
-        // Child node
         const childGroup = createSvgElement('g', { class: `map-node child ${childState} clickable` });
         childGroup.style.cursor = 'pointer';
-        childGroup.appendChild(createSvgElement('rect', {
-          x: cx, y: childY, width: childW, height: childH
-        }));
+        childGroup.appendChild(createSvgElement('rect', { x: cx, y: childY, width: childW, height: childH }));
 
-        childGroup.appendChild(createSvgElement('text', {
-          x: ccx, y: ccy - 6, class: 'map-node-type'
-        }, child.type));
+        childGroup.appendChild(createSvgElement('text', { x: ccx, y: ccy - 6, class: 'map-node-type' }, child.type));
 
         const childLabel = child.label.length > 24 ? child.label.slice(0, 22) + '...' : child.label;
-        childGroup.appendChild(createSvgElement('text', {
-          x: ccx, y: ccy + 6
-        }, childLabel));
+        childGroup.appendChild(createSvgElement('text', { x: ccx, y: ccy + 6 }, childLabel));
 
         childGroup.addEventListener('click', () => {
           const msg = childState === 'completed'
@@ -529,7 +688,6 @@ function renderMarkdown(text) {
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
 
-    // Horizontal rule
     if (/^---+$/.test(line.trim())) {
       if (inList) { html += `</${listType}>`; inList = false; }
       if (inBlockquote) { html += '</blockquote>'; inBlockquote = false; }
@@ -537,7 +695,6 @@ function renderMarkdown(text) {
       continue;
     }
 
-    // Headers
     const h3 = line.match(/^### (.+)/);
     if (h3) {
       if (inList) { html += `</${listType}>`; inList = false; }
@@ -557,7 +714,6 @@ function renderMarkdown(text) {
       continue;
     }
 
-    // Blockquote
     const bq = line.match(/^> (.+)/);
     if (bq) {
       if (inList) { html += `</${listType}>`; inList = false; }
@@ -569,7 +725,6 @@ function renderMarkdown(text) {
       inBlockquote = false;
     }
 
-    // Unordered list
     const ul = line.match(/^[\-\*] (.+)/);
     if (ul) {
       if (!inList || listType !== 'ul') {
@@ -582,7 +737,6 @@ function renderMarkdown(text) {
       continue;
     }
 
-    // Ordered list
     const ol = line.match(/^\d+\. (.+)/);
     if (ol) {
       if (!inList || listType !== 'ol') {
@@ -595,19 +749,16 @@ function renderMarkdown(text) {
       continue;
     }
 
-    // Close list if we're no longer in one
     if (inList) {
       html += `</${listType}>`;
       inList = false;
     }
 
-    // Empty line = paragraph break
     if (line.trim() === '') {
       html += '<div class="spacer"></div>';
       continue;
     }
 
-    // Regular paragraph
     html += `<p>${applyInline(line)}</p>`;
   }
 
@@ -650,13 +801,21 @@ async function sendMessage() {
   addMsg("user", text);
   messages.push({ role: "user", content: text });
 
+  // Set conversation title from first user message
+  if (!convoTitle) {
+    convoTitle = text.length > 50 ? text.slice(0, 47) + "..." : text;
+  }
+
+  // Save after user message
+  saveCurrentConversation();
+
   showTyping();
 
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, sessionId }),
+      body: JSON.stringify({ messages, sessionId: currentConvoId }),
     });
 
     hideTyping();
@@ -674,6 +833,9 @@ async function sendMessage() {
     const data = await res.json();
     messages.push({ role: "assistant", content: data.reply });
     addMsg("ai", data.reply);
+
+    // Save after AI response
+    saveCurrentConversation();
   } catch (err) {
     hideTyping();
     addMsg("ai", "Something went wrong. Please try again in a moment.");
@@ -685,7 +847,7 @@ async function sendMessage() {
   input.focus();
 }
 
-// Map panel toggle
+// ─── Map Panel Controls ───
 mapToggle.addEventListener("click", () => {
   mapPanel.classList.toggle("hidden");
 });
@@ -700,6 +862,7 @@ mapExpand.addEventListener("click", () => {
   renderMap();
 });
 
+// ─── Input Controls ───
 send.addEventListener("click", sendMessage);
 
 input.addEventListener("keydown", (e) => {
@@ -713,3 +876,6 @@ input.addEventListener("input", () => {
   input.style.height = "auto";
   input.style.height = Math.min(input.scrollHeight, 120) + "px";
 });
+
+// ─── Init ───
+renderSidebar();
