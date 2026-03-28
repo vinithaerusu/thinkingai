@@ -134,10 +134,55 @@ function addMsg(role, text) {
         });
       });
     }
+
+    // Render tables
+    if (parsed.tables && parsed.tables.length > 0) {
+      parsed.tables.forEach(tableData => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "table-container";
+        let html = '<table class="data-table">';
+        if (tableData.title) {
+          html += `<caption>${tableData.title}</caption>`;
+        }
+        if (tableData.headers) {
+          html += '<thead><tr>';
+          tableData.headers.forEach(h => { html += `<th>${h}</th>`; });
+          html += '</tr></thead>';
+        }
+        html += '<tbody>';
+        (tableData.rows || []).forEach(row => {
+          html += '<tr>';
+          row.forEach(cell => { html += `<td>${cell}</td>`; });
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+        wrapper.innerHTML = html;
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render flowcharts
+    if (parsed.flowcharts && parsed.flowcharts.length > 0) {
+      parsed.flowcharts.forEach(mermaidCode => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "flowchart-container";
+        const mermaidDiv = document.createElement("div");
+        mermaidDiv.className = "mermaid";
+        mermaidDiv.textContent = mermaidCode;
+        wrapper.appendChild(mermaidDiv);
+        div.appendChild(wrapper);
+      });
+    }
   }
 
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
+
+  // Render any mermaid diagrams after DOM insertion
+  if (div.querySelector('.mermaid')) {
+    mermaid.run({ nodes: div.querySelectorAll('.mermaid') });
+  }
+
   return div;
 }
 
@@ -189,6 +234,28 @@ function parseMapTags(text) {
   }
   cleanText = cleanText.replace(/\[CHART\][\s\S]*?\[\/CHART\]/g, '').trim();
 
+  // Parse [TABLE]...[/TABLE]
+  let tables = [];
+  const tableRegex = /\[TABLE\]([\s\S]*?)\[\/TABLE\]/g;
+  let tableMatch;
+  while ((tableMatch = tableRegex.exec(cleanText)) !== null) {
+    try {
+      tables.push(JSON.parse(tableMatch[1].trim()));
+    } catch (e) {
+      console.error('Failed to parse table JSON:', e);
+    }
+  }
+  cleanText = cleanText.replace(/\[TABLE\][\s\S]*?\[\/TABLE\]/g, '').trim();
+
+  // Parse [FLOWCHART]...[/FLOWCHART]
+  let flowcharts = [];
+  const flowRegex = /\[FLOWCHART\]([\s\S]*?)\[\/FLOWCHART\]/g;
+  let flowMatch;
+  while ((flowMatch = flowRegex.exec(cleanText)) !== null) {
+    flowcharts.push(flowMatch[1].trim());
+  }
+  cleanText = cleanText.replace(/\[FLOWCHART\][\s\S]*?\[\/FLOWCHART\]/g, '').trim();
+
   // Parse [OPTIONS]...[/OPTIONS]
   let options = [];
   const optionsMatch = cleanText.match(/\[OPTIONS\]([\s\S]*?)\[\/OPTIONS\]/);
@@ -197,7 +264,7 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/, '').trim();
   }
 
-  return { cleanText, options, charts };
+  return { cleanText, options, charts, tables, flowcharts };
 }
 
 function parseKnowledgeMap(content) {

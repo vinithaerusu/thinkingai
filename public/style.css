@@ -179,6 +179,68 @@ header .tag {
   max-height: 300px;
 }
 
+/* Table styles */
+.table-container {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.data-table caption {
+  padding: 10px 16px;
+  text-align: left;
+  color: #e5e5e5;
+  font-weight: 600;
+  font-size: 14px;
+  background: #151515;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.data-table th {
+  padding: 10px 16px;
+  text-align: left;
+  color: #999;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: #151515;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.data-table td {
+  padding: 10px 16px;
+  color: #d4d4d4;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: #1a1a1a;
+}
+
+/* Flowchart styles */
+.flowchart-container {
+  margin-top: 16px;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
 .typing {
   max-width: 680px;
   width: 100%;
