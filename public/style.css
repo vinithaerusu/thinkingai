@@ -581,7 +581,7 @@ header .tag {
 
 .map-node text {
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 13px;
   fill: var(--text-tertiary);
   text-anchor: middle;
   dominant-baseline: central;
@@ -597,7 +597,7 @@ header .tag {
 .map-node.root text {
   fill: var(--accent-text);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .map-node.clickable { cursor: pointer; }
