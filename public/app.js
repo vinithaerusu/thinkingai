@@ -11,8 +11,8 @@ let messages = [];
 let sending = false;
 
 // Knowledge map state
-let knowledgeMap = null; // { root: string, nodes: [{ type, label }] }
-let nodeStates = {}; // { label: 'pending' | 'active' | 'completed' }
+let knowledgeMap = null; // { root: string, nodes: [{ type, label, children: [] }] }
+let nodeStates = {}; // { type: 'pending' | 'active' | 'completed' }
 let activeNodeIndex = -1;
 
 function addMsg(role, text) {
@@ -62,6 +62,14 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[COMPLETED_NODE\].*?\[\/COMPLETED_NODE\]/, '').trim();
   }
 
+  // Parse [EXPAND_MAP]...[/EXPAND_MAP]
+  const expandMatch = text.match(/\[EXPAND_MAP\]([\s\S]*?)\[\/EXPAND_MAP\]/);
+  if (expandMatch) {
+    const expandContent = expandMatch[1].trim();
+    expandNode(expandContent);
+    cleanText = cleanText.replace(/\[EXPAND_MAP\][\s\S]*?\[\/EXPAND_MAP\]/, '').trim();
+  }
+
   return { cleanText };
 }
 
@@ -76,7 +84,7 @@ function parseKnowledgeMap(content) {
     const line = lines[i];
     const match = line.match(/[├└]──\s*(\w+):\s*(.+)/);
     if (match) {
-      nodes.push({ type: match[1].trim(), label: match[2].trim() });
+      nodes.push({ type: match[1].trim(), label: match[2].trim(), children: [] });
     }
   }
 
@@ -114,22 +122,69 @@ function completeNode(name) {
   renderMap();
 }
 
+function expandNode(content) {
+  if (!knowledgeMap) return;
+  const lines = content.split('\n').filter(l => l.trim());
+  if (lines.length === 0) return;
+
+  // First line is the parent node type
+  const parentType = lines[0].trim().toLowerCase();
+  const parent = knowledgeMap.nodes.find(n =>
+    n.type.toLowerCase() === parentType || n.label.toLowerCase().includes(parentType)
+  );
+  if (!parent) return;
+
+  // Parse child nodes
+  for (let i = 1; i < lines.length; i++) {
+    const match = lines[i].match(/[├└]──\s*(\w+):\s*(.+)/);
+    if (match) {
+      const childType = match[1].trim();
+      const childLabel = match[2].trim();
+      const childKey = parent.type + '.' + childType;
+      // Avoid duplicates
+      if (!parent.children.find(c => c.type === childType)) {
+        parent.children.push({ type: childType, label: childLabel, children: [], parentType: parent.type });
+        nodeStates[childKey] = 'pending';
+      }
+    }
+  }
+
+  renderMap();
+}
+
 function renderMap() {
   if (!knowledgeMap) return;
 
   const nodes = knowledgeMap.nodes;
   const nodeW = 130;
   const nodeH = 44;
+  const childW = 110;
+  const childH = 36;
   const rootW = 140;
   const rootH = 40;
   const vGap = 60;
+  const childVGap = 40;
   const hGap = 16;
 
-  // Calculate layout
+  // Calculate layout — account for expanded children
   const cols = Math.min(nodes.length, 2);
-  const rows = Math.ceil(nodes.length / cols);
+
+  // Calculate row heights (a row is taller if a node in it has children)
+  const rowCount = Math.ceil(nodes.length / cols);
+  const rowHeights = [];
+  for (let r = 0; r < rowCount; r++) {
+    let maxChildren = 0;
+    for (let c = 0; c < cols; c++) {
+      const idx = r * cols + c;
+      if (idx < nodes.length) {
+        maxChildren = Math.max(maxChildren, nodes[idx].children.length);
+      }
+    }
+    rowHeights.push(nodeH + (maxChildren > 0 ? maxChildren * (childH + 12) + childVGap : 0));
+  }
+
   const totalW = cols * (nodeW + hGap) - hGap + 40;
-  const totalH = rootH + vGap + rows * (nodeH + vGap) + 20;
+  const totalH = rootH + vGap + rowHeights.reduce((a, b) => a + b + vGap, 0) + 20;
   const centerX = totalW / 2;
 
   mapSvg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
@@ -151,15 +206,18 @@ function renderMap() {
   mapSvg.appendChild(rootGroup);
 
   // Child nodes
-  const startY = rootY + rootH + vGap;
-
   nodes.forEach((node, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
 
+    // Calculate Y position based on cumulative row heights
+    let ny = rootY + rootH + vGap;
+    for (let r = 0; r < row; r++) {
+      ny += rowHeights[r] + vGap;
+    }
+
     const colWidth = (totalW - 40) / cols;
     const nx = 20 + col * colWidth + (colWidth - nodeW) / 2;
-    const ny = startY + row * (nodeH + vGap);
     const ncx = nx + nodeW / 2;
     const ncy = ny + nodeH / 2;
 
@@ -191,6 +249,45 @@ function renderMap() {
     }, label));
 
     mapSvg.appendChild(group);
+
+    // Render children if expanded
+    if (node.children.length > 0) {
+      let childY = ny + nodeH + childVGap;
+
+      node.children.forEach(child => {
+        const childKey = node.type + '.' + child.type;
+        const childState = nodeStates[childKey] || 'pending';
+
+        const cx = ncx - childW / 2;
+        const ccx = ncx;
+        const ccy = childY + childH / 2;
+
+        // Line from parent to child
+        const childLineClass = childState === 'completed' ? 'map-line completed' : childState === 'active' ? 'map-line active' : 'map-line';
+        mapSvg.appendChild(createSvgElement('path', {
+          d: `M ${ncx} ${ny + nodeH} C ${ncx} ${ny + nodeH + childVGap / 2}, ${ccx} ${childY - childVGap / 2}, ${ccx} ${childY}`,
+          class: childLineClass
+        }));
+
+        // Child node
+        const childGroup = createSvgElement('g', { class: `map-node child ${childState}` });
+        childGroup.appendChild(createSvgElement('rect', {
+          x: cx, y: childY, width: childW, height: childH
+        }));
+
+        childGroup.appendChild(createSvgElement('text', {
+          x: ccx, y: ccy - 6, class: 'map-node-type'
+        }, child.type));
+
+        const childLabel = child.label.length > 16 ? child.label.slice(0, 14) + '...' : child.label;
+        childGroup.appendChild(createSvgElement('text', {
+          x: ccx, y: ccy + 6
+        }, childLabel));
+
+        mapSvg.appendChild(childGroup);
+        childY += childH + 12;
+      });
+    }
   });
 }
 

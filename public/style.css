@@ -347,6 +347,15 @@ header .tag {
   stroke: #2a5a2a;
 }
 
+.map-node.child rect {
+  rx: 6;
+  ry: 6;
+}
+
+.map-node.child text {
+  font-size: 10px;
+}
+
 .map-node-type {
   font-size: 9px;
   fill: #444;

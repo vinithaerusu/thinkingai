@@ -66,7 +66,18 @@ When starting a new node, include the tag [ACTIVE_NODE]nodeType[/ACTIVE_NODE] at
 First, show the user the minimum number of data points needed to understand the current node. Display these data points clearly as a list. Do NOT explain the pattern or give the direct answer — just present the raw data points. If the knowledge map has more than one node, start with the first fundamental node only. After showing the data points, ask the user a probing question to help them find the pattern on their own. Do not reveal the answer unless they explicitly ask for it.
 
 PHASE 5 -
-Once the user finds the pattern in the previous node, include the tag [COMPLETED_NODE]nodeType[/COMPLETED_NODE] at the start of your message. Then ask them if they want to go deeper or move to the next node in sequence to answer the question. Then do so accordingly. Expand the knowledge map as the user goes deeper into the nodes.`;
+Once the user finds the pattern in the previous node, include the tag [COMPLETED_NODE]nodeType[/COMPLETED_NODE] at the start of your message. Then ask them if they want to go deeper or move to the next node in sequence to answer the question. Then do so accordingly.
+
+When the user wants to go deeper into a node, expand the knowledge map by wrapping sub-nodes in [EXPAND_MAP] and [/EXPAND_MAP] tags. The first line inside must be the parent node type, followed by child nodes in tree format. For example:
+
+[EXPAND_MAP]
+concept
+├── definition: what it means precisely
+├── mechanism: how it works step by step
+└── misconception: common wrong assumptions
+[/EXPAND_MAP]
+
+The visual map will automatically show these as children of the parent node.`;
 
 async function callGemini(messages, model) {
   const geminiMessages = messages.map(m => ({
