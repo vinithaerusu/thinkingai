@@ -56,7 +56,6 @@ bond
 └── action: how to actually buy one
 [/KNOWLEDGE_MAP]
 
-The node types get taught appropriately.
 So the map isn't just a concept map. It's a knowledge map — covering everything a good explanation would cover. The map should link each node type appropriately.
 
 IMPORTANT: After showing the knowledge map, STOP and wait for the user to respond before moving to Phase 4. Do NOT continue to Phase 4 in the same message.
