@@ -1140,44 +1140,6 @@ header h1 {
   font-size: 11px;
 }
 
-/* ─── Imagine/Picture-This Visual ─── */
-.imagine-visual {
-  margin-top: 16px;
-  background: linear-gradient(135deg, rgba(124, 152, 133, 0.06), rgba(155, 138, 110, 0.06));
-  border: 1px solid var(--accent-dim);
-  border-radius: 4px;
-  padding: 20px;
-}
-
-.imagine-icon {
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
-.imagine-scene {
-  font-size: 14px;
-  color: var(--text-dim);
-  line-height: 1.7;
-  font-style: italic;
-}
-
-.imagine-labels {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.imagine-label {
-  font-size: 12px;
-  color: var(--accent-text);
-  background: var(--accent-muted);
-  border: 1px solid var(--accent-dim);
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-style: normal;
-}
-
 /* ─── Typing Indicator ─── */
 .typing {
   max-width: 680px;

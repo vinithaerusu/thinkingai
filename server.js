@@ -73,7 +73,7 @@ IMPORTANT: After showing the knowledge map, STOP and wait for the user to respon
 PHASE 4 -
 When starting a new node, include the tag [ACTIVE_NODE]nodeType[/ACTIVE_NODE] at the start of your message (e.g., [ACTIVE_NODE]concept[/ACTIVE_NODE]). The nodeType must match one of the node types from the knowledge map (For example, concept, parts, types, example, compare, why, risks, action, etc.).
 
-First, show me the minimum number of data points, for the current node, to answer my prompt about what I want to know without telling me the direct answer. Data points can be textual and/or visual, based on what's appropriate for the node. Then probe the user to find the pattern. Do not reveal the answer unless they explicitly ask for it.
+First, show me the minimum number of data points, for the current node, to answer my prompt about what I want to know without telling me the direct answer. Display these data points clearly as a list. Data points can be textual and/or visual, based on what's appropriate for the node. Then probe the user to find the pattern. Do not reveal the answer unless they explicitly ask for it.
 
 For visual data points, you can include a chart using [CHART] and [/CHART] tags with JSON inside. Supported types: bar, line, pie, doughnut. Format:
 
@@ -185,13 +185,6 @@ Example-
 [SPATIAL]
 {"title":"Simple Computer Architecture","items":[{"label":"CPU","x":50,"y":20,"size":"large"},{"label":"RAM","x":20,"y":60,"size":"medium"},{"label":"Storage","x":80,"y":60,"size":"medium"},{"label":"Input","x":10,"y":90,"size":"small"},{"label":"Output","x":90,"y":90,"size":"small"}],"connections":[{"from":"CPU","to":"RAM"},{"from":"CPU","to":"Storage"},{"from":"RAM","to":"Storage"},{"from":"Input","to":"CPU"},{"from":"CPU","to":"Output"}]}
 [/SPATIAL]
-
-For visual data points, you can ask the user to picture something with [IMAGINE] and [/IMAGINE] tags with JSON inside (useful when a visual would help but can't be rendered as a chart):
-
-Example-
-[IMAGINE]
-{"scene":"Picture a see-saw at a playground. On one side sits a heavy bag labeled 'Risk'. On the other side, a bag labeled 'Return'. The heavier the Risk bag, the higher the Return side goes. This is the fundamental tradeoff in investing.","labels":["Risk (weight)","Return (height)","The pivot = your risk tolerance"]}
-[/IMAGINE]
 
 Only use visuals when they genuinely help understanding — not for every response.
 

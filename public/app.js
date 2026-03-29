@@ -574,7 +574,7 @@ function addMsg(role, text, isReplay) {
     div.appendChild(bubble);
   } else {
     // Parse knowledge map tags before rendering
-    const parsed = isReplay ? { cleanText: stripMapTags(text), options: [], charts: [], tables: [], flowcharts: [], timelines: [], scales: [], beforeAfters: [], venns: [], codeblocks: [], diagrams: [], hierarchies: [], maths: [], steps: [], spatials: [], imagines: [] } : parseMapTags(text);
+    const parsed = isReplay ? { cleanText: stripMapTags(text), options: [], charts: [], tables: [], flowcharts: [], timelines: [], scales: [], beforeAfters: [], venns: [], codeblocks: [], diagrams: [], hierarchies: [], maths: [], steps: [], spatials: [], inlineVisuals: [], quizzes: [], learningPath: null } : parseMapTags(text);
     div.innerHTML = renderMarkdown(parsed.cleanText);
 
     // Render options as clickable buttons (only for live messages)
@@ -612,395 +612,21 @@ function addMsg(role, text, isReplay) {
       div.appendChild(optionsDiv);
     }
 
-    // Render charts
-    if (parsed.charts && parsed.charts.length > 0) {
-      parsed.charts.forEach(chartData => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "chart-container";
-        const canvas = document.createElement("canvas");
-        wrapper.appendChild(canvas);
-        div.appendChild(wrapper);
-
-        const colors = ['#7c9885', '#9b8a6e', '#6e8a9b', '#9b6e7c', '#8a9b6e', '#7c6e9b', '#9b8a7c', '#6e9b8a'];
-
-        const datasets = chartData.datasets
-          ? chartData.datasets.map((ds, i) => ({
-              label: ds.label || '',
-              data: ds.data,
-              backgroundColor: ds.backgroundColor || colors[i % colors.length] + '40',
-              borderColor: ds.borderColor || colors[i % colors.length],
-              borderWidth: 2,
-              tension: 0.3,
-              pointBackgroundColor: colors[i % colors.length],
-            }))
-          : [{
-              label: chartData.ylabel || '',
-              data: chartData.data,
-              backgroundColor: colors.slice(0, (chartData.data || []).length).map(c => c + '40'),
-              borderColor: colors.slice(0, (chartData.data || []).length),
-              borderWidth: 2,
-              tension: 0.3,
-              pointBackgroundColor: '#7c9885',
-            }];
-
-        new Chart(canvas, {
-          type: chartData.type || 'bar',
-          data: {
-            labels: chartData.labels || [],
-            datasets: datasets,
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              title: {
-                display: !!chartData.title,
-                text: chartData.title || '',
-                color: '#e0e0e0',
-                font: { size: 13, family: "'IBM Plex Sans', sans-serif" },
-              },
-              legend: {
-                display: datasets.length > 1,
-                labels: { color: '#787878', font: { family: "'IBM Plex Sans', sans-serif" } },
-              },
-            },
-            scales: {
-              x: {
-                title: { display: !!chartData.xlabel, text: chartData.xlabel || '', color: '#787878', font: { family: "'IBM Plex Sans', sans-serif" } },
-                ticks: { color: '#4a4a4a', font: { family: "'IBM Plex Sans', sans-serif" } },
-                grid: { color: '#2a2a2a' },
-              },
-              y: {
-                title: { display: !!chartData.ylabel, text: chartData.ylabel || '', color: '#787878', font: { family: "'IBM Plex Sans', sans-serif" } },
-                ticks: { color: '#4a4a4a', font: { family: "'IBM Plex Sans', sans-serif" } },
-                grid: { color: '#2a2a2a' },
-              },
-            },
-          },
-        });
+    // Replace visual placeholders with actual DOM elements inline
+    if (parsed.inlineVisuals && parsed.inlineVisuals.length > 0) {
+      // First, replace %%VIS_N%% markers in the rendered HTML with placeholder divs
+      let html = div.innerHTML;
+      parsed.inlineVisuals.forEach(v => {
+        html = html.replace(`%%VIS_${v.id}%%`, `<div data-visual-id="${v.id}"></div>`);
       });
-    }
+      div.innerHTML = html;
 
-    // Render tables
-    if (parsed.tables && parsed.tables.length > 0) {
-      parsed.tables.forEach(tableData => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "table-container";
-        let html = '<table class="data-table">';
-        if (tableData.title) {
-          html += `<caption>${tableData.title}</caption>`;
-        }
-        if (tableData.headers) {
-          html += '<thead><tr>';
-          tableData.headers.forEach(h => { html += `<th>${h}</th>`; });
-          html += '</tr></thead>';
-        }
-        html += '<tbody>';
-        (tableData.rows || []).forEach(row => {
-          html += '<tr>';
-          row.forEach(cell => { html += `<td>${cell}</td>`; });
-          html += '</tr>';
-        });
-        html += '</tbody></table>';
-        wrapper.innerHTML = html;
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render flowcharts
-    if (parsed.flowcharts && parsed.flowcharts.length > 0) {
-      parsed.flowcharts.forEach(mermaidCode => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "flowchart-container";
-        const mermaidDiv = document.createElement("div");
-        mermaidDiv.className = "mermaid";
-        mermaidDiv.textContent = mermaidCode;
-        wrapper.appendChild(mermaidDiv);
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render timelines
-    if (parsed.timelines && parsed.timelines.length > 0) {
-      parsed.timelines.forEach(tl => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "timeline-visual";
-        if (tl.title) {
-          const title = document.createElement("div");
-          title.className = "timeline-visual-title";
-          title.textContent = tl.title;
-          wrapper.appendChild(title);
-        }
-        const track = document.createElement("div");
-        track.className = "timeline-track";
-        (tl.events || []).forEach((evt, i) => {
-          const item = document.createElement("div");
-          item.className = "timeline-item";
-          item.innerHTML = `<span class="timeline-dot"></span><span class="timeline-item-date">${evt.date || ''}</span><span class="timeline-item-label">${evt.label || ''}</span>`;
-          track.appendChild(item);
-        });
-        wrapper.appendChild(track);
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render scales/spectrums
-    if (parsed.scales && parsed.scales.length > 0) {
-      parsed.scales.forEach(sc => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "scale-visual";
-        if (sc.title) {
-          const title = document.createElement("div");
-          title.className = "scale-title";
-          title.textContent = sc.title;
-          wrapper.appendChild(title);
-        }
-        const bar = document.createElement("div");
-        bar.className = "scale-bar";
-        const leftLbl = document.createElement("span");
-        leftLbl.className = "scale-label scale-label-left";
-        leftLbl.textContent = sc.leftLabel || '';
-        const rightLbl = document.createElement("span");
-        rightLbl.className = "scale-label scale-label-right";
-        rightLbl.textContent = sc.rightLabel || '';
-        const track = document.createElement("div");
-        track.className = "scale-track";
-        (sc.items || []).forEach(item => {
-          const marker = document.createElement("div");
-          marker.className = "scale-marker";
-          marker.style.left = `${Math.max(0, Math.min(100, item.position || 50))}%`;
-          marker.innerHTML = `<span class="scale-marker-dot"></span><span class="scale-marker-label">${item.label || ''}</span>`;
-          track.appendChild(marker);
-        });
-        bar.appendChild(leftLbl);
-        bar.appendChild(track);
-        bar.appendChild(rightLbl);
-        wrapper.appendChild(bar);
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render before/after
-    if (parsed.beforeAfters && parsed.beforeAfters.length > 0) {
-      parsed.beforeAfters.forEach(ba => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "beforeafter-visual";
-        if (ba.title) {
-          const title = document.createElement("div");
-          title.className = "beforeafter-title";
-          title.textContent = ba.title;
-          wrapper.appendChild(title);
-        }
-        const cols = document.createElement("div");
-        cols.className = "beforeafter-cols";
-        [ba.before, ba.after].forEach((side, i) => {
-          if (!side) return;
-          const col = document.createElement("div");
-          col.className = `beforeafter-col ${i === 0 ? 'before' : 'after'}`;
-          col.innerHTML = `<div class="beforeafter-col-label">${side.label || (i === 0 ? 'Before' : 'After')}</div><ul class="beforeafter-list">${(side.items || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
-          cols.appendChild(col);
-        });
-        wrapper.appendChild(cols);
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render Venn diagrams
-    if (parsed.venns && parsed.venns.length > 0) {
-      parsed.venns.forEach(vn => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "venn-visual";
-        if (vn.title) {
-          const title = document.createElement("div");
-          title.className = "venn-title";
-          title.textContent = vn.title;
-          wrapper.appendChild(title);
-        }
-        const diagram = document.createElement("div");
-        diagram.className = "venn-diagram";
-        const leftCircle = document.createElement("div");
-        leftCircle.className = "venn-circle venn-left";
-        leftCircle.innerHTML = `<div class="venn-circle-label">${(vn.left && vn.left.label) || ''}</div><ul>${((vn.left && vn.left.items) || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
-        const rightCircle = document.createElement("div");
-        rightCircle.className = "venn-circle venn-right";
-        rightCircle.innerHTML = `<div class="venn-circle-label">${(vn.right && vn.right.label) || ''}</div><ul>${((vn.right && vn.right.items) || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
-        const overlap = document.createElement("div");
-        overlap.className = "venn-overlap";
-        overlap.innerHTML = `<ul>${(vn.overlap || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
-        diagram.appendChild(leftCircle);
-        diagram.appendChild(overlap);
-        diagram.appendChild(rightCircle);
-        wrapper.appendChild(diagram);
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render code blocks
-    if (parsed.codeblocks && parsed.codeblocks.length > 0) {
-      parsed.codeblocks.forEach(cb => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "codeblock-visual";
-        let header = '';
-        if (cb.title || cb.language) {
-          header = `<div class="codeblock-header"><span class="codeblock-lang">${cb.language || ''}</span><span class="codeblock-title-text">${cb.title || ''}</span></div>`;
-        }
-        const escaped = (cb.code || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        wrapper.innerHTML = `${header}<pre class="codeblock-pre"><code>${escaped}</code></pre>`;
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render Mermaid diagrams (sequence, state, class, etc.)
-    if (parsed.diagrams && parsed.diagrams.length > 0) {
-      parsed.diagrams.forEach(mermaidCode => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "diagram-container";
-        const mermaidDiv = document.createElement("div");
-        mermaidDiv.className = "mermaid";
-        mermaidDiv.textContent = mermaidCode;
-        wrapper.appendChild(mermaidDiv);
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render hierarchies
-    if (parsed.hierarchies && parsed.hierarchies.length > 0) {
-      parsed.hierarchies.forEach(hier => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "hierarchy-visual";
-        if (hier.title) {
-          const title = document.createElement("div");
-          title.className = "hierarchy-title";
-          title.textContent = hier.title;
-          wrapper.appendChild(title);
-        }
-        if (hier.root) {
-          const tree = document.createElement("div");
-          tree.className = "hierarchy-tree";
-          tree.appendChild(renderHierNode(hier.root, 0));
-          wrapper.appendChild(tree);
-        }
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render math formulas
-    if (parsed.maths && parsed.maths.length > 0) {
-      parsed.maths.forEach(m => {
-        const wrapper = document.createElement("div");
-        wrapper.className = m.display ? "math-visual math-display" : "math-visual math-inline";
-        try {
-          if (typeof katex !== 'undefined') {
-            katex.render(m.formula || '', wrapper, { displayMode: !!m.display, throwOnError: false });
-          } else {
-            wrapper.textContent = m.formula || '';
-          }
-        } catch (e) {
-          wrapper.textContent = m.formula || '';
-        }
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render step-by-step reveals
-    if (parsed.steps && parsed.steps.length > 0) {
-      parsed.steps.forEach(st => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "steps-visual";
-        if (st.title) {
-          const title = document.createElement("div");
-          title.className = "steps-title";
-          title.textContent = st.title;
-          wrapper.appendChild(title);
-        }
-        const stepsContainer = document.createElement("div");
-        stepsContainer.className = "steps-container";
-        let revealed = 0;
-        (st.steps || []).forEach((step, i) => {
-          const stepEl = document.createElement("div");
-          stepEl.className = `step-item ${i === 0 ? 'revealed' : 'hidden'}`;
-          stepEl.innerHTML = `<div class="step-marker"><span class="step-num">${i + 1}</span></div><div class="step-body"><div class="step-label">${step.label || ''}</div><div class="step-content">${step.content || ''}</div></div>`;
-          stepsContainer.appendChild(stepEl);
-        });
-        wrapper.appendChild(stepsContainer);
-        if ((st.steps || []).length > 1) {
-          const nextBtn = document.createElement("button");
-          nextBtn.className = "steps-next-btn";
-          nextBtn.textContent = "Next step →";
-          revealed = 1;
-          nextBtn.addEventListener("click", () => {
-            const items = stepsContainer.querySelectorAll('.step-item');
-            if (revealed < items.length) {
-              items[revealed].classList.remove('hidden');
-              items[revealed].classList.add('revealed');
-              revealed++;
-              if (revealed >= items.length) {
-                nextBtn.style.display = 'none';
-              }
-            }
-          });
-          wrapper.appendChild(nextBtn);
-        }
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render spatial layouts
-    if (parsed.spatials && parsed.spatials.length > 0) {
-      parsed.spatials.forEach(sp => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "spatial-visual";
-        if (sp.title) {
-          const title = document.createElement("div");
-          title.className = "spatial-title";
-          title.textContent = sp.title;
-          wrapper.appendChild(title);
-        }
-        const canvas = document.createElement("div");
-        canvas.className = "spatial-canvas";
-        const itemMap = {};
-        (sp.items || []).forEach(item => {
-          const el = document.createElement("div");
-          const sizeClass = item.size === 'large' ? 'spatial-item-lg' : item.size === 'small' ? 'spatial-item-sm' : 'spatial-item-md';
-          el.className = `spatial-item ${sizeClass}`;
-          el.style.left = `${item.x || 50}%`;
-          el.style.top = `${item.y || 50}%`;
-          el.textContent = item.label || '';
-          canvas.appendChild(el);
-          itemMap[item.label] = { x: item.x || 50, y: item.y || 50 };
-        });
-        // Draw connections as SVG
-        if (sp.connections && sp.connections.length > 0) {
-          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-          svg.setAttribute('class', 'spatial-connections');
-          svg.setAttribute('width', '100%');
-          svg.setAttribute('height', '100%');
-          sp.connections.forEach(conn => {
-            const from = itemMap[conn.from];
-            const to = itemMap[conn.to];
-            if (from && to) {
-              const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-              line.setAttribute('x1', `${from.x}%`);
-              line.setAttribute('y1', `${from.y}%`);
-              line.setAttribute('x2', `${to.x}%`);
-              line.setAttribute('y2', `${to.y}%`);
-              line.setAttribute('class', 'spatial-line');
-              svg.appendChild(line);
-            }
-          });
-          canvas.insertBefore(svg, canvas.firstChild);
-        }
-        wrapper.appendChild(canvas);
-        div.appendChild(wrapper);
-      });
-    }
-
-    // Render imagine/picture-this
-    if (parsed.imagines && parsed.imagines.length > 0) {
-      parsed.imagines.forEach(im => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "imagine-visual";
-        wrapper.innerHTML = `<div class="imagine-icon">👁</div><div class="imagine-scene">${im.scene || ''}</div>${(im.labels && im.labels.length > 0) ? `<div class="imagine-labels">${im.labels.map(l => `<span class="imagine-label">${l}</span>`).join('')}</div>` : ''}`;
-        div.appendChild(wrapper);
+      // Now replace each placeholder with the actual visual element
+      parsed.inlineVisuals.forEach(v => {
+        const ph = div.querySelector(`[data-visual-id="${v.id}"]`);
+        if (!ph) return;
+        const el = createVisualElement(v.type, v.data);
+        if (el) ph.replaceWith(el);
       });
     }
 
@@ -1173,7 +799,7 @@ function stripMapTags(text) {
     .replace(/\[MATH\][\s\S]*?\[\/MATH\]/g, '')
     .replace(/\[STEPS\][\s\S]*?\[\/STEPS\]/g, '')
     .replace(/\[SPATIAL\][\s\S]*?\[\/SPATIAL\]/g, '')
-    .replace(/\[IMAGINE\][\s\S]*?\[\/IMAGINE\]/g, '')
+
     .replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/g, '')
     .replace(/\[QUIZ\][\s\S]*?\[\/QUIZ\]/g, '')
     .replace(/\[LEARNING_PATH\][\s\S]*?\[\/LEARNING_PATH\]/g, '')
@@ -1211,117 +837,44 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[EXPAND_MAP\][\s\S]*?\[\/EXPAND_MAP\]/, '').trim();
   }
 
-  let charts = [];
-  const chartRegex = /\[CHART\]([\s\S]*?)\[\/CHART\]/g;
-  let chartMatch;
-  while ((chartMatch = chartRegex.exec(cleanText)) !== null) {
-    try { charts.push(JSON.parse(chartMatch[1].trim())); } catch (e) { console.error('Failed to parse chart JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[CHART\][\s\S]*?\[\/CHART\]/g, '').trim();
+  // Inline visuals: replace tags with placeholders to preserve original position
+  let inlineVisuals = [];
+  let vid = 0;
+  let charts = [], tables = [], flowcharts = [], timelines = [], scales = [];
+  let beforeAfters = [], venns = [], codeblocks = [], diagrams = [], hierarchies = [];
+  let maths = [], steps = [], spatials = [], quizzes = [];
 
-  let tables = [];
-  const tableRegex = /\[TABLE\]([\s\S]*?)\[\/TABLE\]/g;
-  let tableMatch;
-  while ((tableMatch = tableRegex.exec(cleanText)) !== null) {
-    try { tables.push(JSON.parse(tableMatch[1].trim())); } catch (e) { console.error('Failed to parse table JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[TABLE\][\s\S]*?\[\/TABLE\]/g, '').trim();
+  const visualTypes = [
+    { tag: 'CHART', arr: charts, parse: 'json' },
+    { tag: 'TABLE', arr: tables, parse: 'json' },
+    { tag: 'FLOWCHART', arr: flowcharts, parse: 'raw' },
+    { tag: 'TIMELINE', arr: timelines, parse: 'json' },
+    { tag: 'SCALE', arr: scales, parse: 'json' },
+    { tag: 'BEFOREAFTER', arr: beforeAfters, parse: 'json' },
+    { tag: 'VENN', arr: venns, parse: 'json' },
+    { tag: 'CODEBLOCK', arr: codeblocks, parse: 'json' },
+    { tag: 'DIAGRAM', arr: diagrams, parse: 'raw' },
+    { tag: 'HIERARCHY', arr: hierarchies, parse: 'json' },
+    { tag: 'MATH', arr: maths, parse: 'json' },
+    { tag: 'STEPS', arr: steps, parse: 'json' },
+    { tag: 'SPATIAL', arr: spatials, parse: 'json' },
+    { tag: 'QUIZ', arr: quizzes, parse: 'json' },
+  ];
 
-  let flowcharts = [];
-  const flowRegex = /\[FLOWCHART\]([\s\S]*?)\[\/FLOWCHART\]/g;
-  let flowMatch;
-  while ((flowMatch = flowRegex.exec(cleanText)) !== null) {
-    flowcharts.push(flowMatch[1].trim());
-  }
-  cleanText = cleanText.replace(/\[FLOWCHART\][\s\S]*?\[\/FLOWCHART\]/g, '').trim();
-
-  let timelines = [];
-  const timelineRegex = /\[TIMELINE\]([\s\S]*?)\[\/TIMELINE\]/g;
-  let timelineMatch;
-  while ((timelineMatch = timelineRegex.exec(cleanText)) !== null) {
-    try { timelines.push(JSON.parse(timelineMatch[1].trim())); } catch (e) { console.error('Failed to parse timeline JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[TIMELINE\][\s\S]*?\[\/TIMELINE\]/g, '').trim();
-
-  let scales = [];
-  const scaleRegex = /\[SCALE\]([\s\S]*?)\[\/SCALE\]/g;
-  let scaleMatch;
-  while ((scaleMatch = scaleRegex.exec(cleanText)) !== null) {
-    try { scales.push(JSON.parse(scaleMatch[1].trim())); } catch (e) { console.error('Failed to parse scale JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[SCALE\][\s\S]*?\[\/SCALE\]/g, '').trim();
-
-  let beforeAfters = [];
-  const baRegex = /\[BEFOREAFTER\]([\s\S]*?)\[\/BEFOREAFTER\]/g;
-  let baMatch;
-  while ((baMatch = baRegex.exec(cleanText)) !== null) {
-    try { beforeAfters.push(JSON.parse(baMatch[1].trim())); } catch (e) { console.error('Failed to parse beforeafter JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[BEFOREAFTER\][\s\S]*?\[\/BEFOREAFTER\]/g, '').trim();
-
-  let venns = [];
-  const vennRegex = /\[VENN\]([\s\S]*?)\[\/VENN\]/g;
-  let vennMatch;
-  while ((vennMatch = vennRegex.exec(cleanText)) !== null) {
-    try { venns.push(JSON.parse(vennMatch[1].trim())); } catch (e) { console.error('Failed to parse venn JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[VENN\][\s\S]*?\[\/VENN\]/g, '').trim();
-
-  let codeblocks = [];
-  const codeRegex = /\[CODEBLOCK\]([\s\S]*?)\[\/CODEBLOCK\]/g;
-  let codeMatch;
-  while ((codeMatch = codeRegex.exec(cleanText)) !== null) {
-    try { codeblocks.push(JSON.parse(codeMatch[1].trim())); } catch (e) { console.error('Failed to parse codeblock JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[CODEBLOCK\][\s\S]*?\[\/CODEBLOCK\]/g, '').trim();
-
-  let diagrams = [];
-  const diagramRegex = /\[DIAGRAM\]([\s\S]*?)\[\/DIAGRAM\]/g;
-  let diagramMatch;
-  while ((diagramMatch = diagramRegex.exec(cleanText)) !== null) {
-    diagrams.push(diagramMatch[1].trim());
-  }
-  cleanText = cleanText.replace(/\[DIAGRAM\][\s\S]*?\[\/DIAGRAM\]/g, '').trim();
-
-  let hierarchies = [];
-  const hierRegex = /\[HIERARCHY\]([\s\S]*?)\[\/HIERARCHY\]/g;
-  let hierMatch;
-  while ((hierMatch = hierRegex.exec(cleanText)) !== null) {
-    try { hierarchies.push(JSON.parse(hierMatch[1].trim())); } catch (e) { console.error('Failed to parse hierarchy JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[HIERARCHY\][\s\S]*?\[\/HIERARCHY\]/g, '').trim();
-
-  let maths = [];
-  const mathRegex = /\[MATH\]([\s\S]*?)\[\/MATH\]/g;
-  let mathMatch;
-  while ((mathMatch = mathRegex.exec(cleanText)) !== null) {
-    try { maths.push(JSON.parse(mathMatch[1].trim())); } catch (e) { console.error('Failed to parse math JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[MATH\][\s\S]*?\[\/MATH\]/g, '').trim();
-
-  let steps = [];
-  const stepsRegex = /\[STEPS\]([\s\S]*?)\[\/STEPS\]/g;
-  let stepsMatch;
-  while ((stepsMatch = stepsRegex.exec(cleanText)) !== null) {
-    try { steps.push(JSON.parse(stepsMatch[1].trim())); } catch (e) { console.error('Failed to parse steps JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[STEPS\][\s\S]*?\[\/STEPS\]/g, '').trim();
-
-  let spatials = [];
-  const spatialRegex = /\[SPATIAL\]([\s\S]*?)\[\/SPATIAL\]/g;
-  let spatialMatch;
-  while ((spatialMatch = spatialRegex.exec(cleanText)) !== null) {
-    try { spatials.push(JSON.parse(spatialMatch[1].trim())); } catch (e) { console.error('Failed to parse spatial JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[SPATIAL\][\s\S]*?\[\/SPATIAL\]/g, '').trim();
-
-  let imagines = [];
-  const imagineRegex = /\[IMAGINE\]([\s\S]*?)\[\/IMAGINE\]/g;
-  let imagineMatch;
-  while ((imagineMatch = imagineRegex.exec(cleanText)) !== null) {
-    try { imagines.push(JSON.parse(imagineMatch[1].trim())); } catch (e) { console.error('Failed to parse imagine JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[IMAGINE\][\s\S]*?\[\/IMAGINE\]/g, '').trim();
+  visualTypes.forEach(vt => {
+    const regex = new RegExp(`\\[${vt.tag}\\]([\\s\\S]*?)\\[\\/${vt.tag}\\]`, 'g');
+    cleanText = cleanText.replace(regex, (match, content) => {
+      try {
+        const data = vt.parse === 'json' ? JSON.parse(content.trim()) : content.trim();
+        vt.arr.push(data);
+        inlineVisuals.push({ type: vt.tag.toLowerCase(), data, id: vid });
+        return `\n\n%%VIS_${vid++}%%\n\n`;
+      } catch (e) {
+        console.error(`Failed to parse ${vt.tag} content:`, e);
+        return '';
+      }
+    });
+  });
 
   let options = [];
   const optionsMatch = cleanText.match(/\[OPTIONS\]([\s\S]*?)\[\/OPTIONS\]/);
@@ -1329,14 +882,6 @@ function parseMapTags(text) {
     options = optionsMatch[1].trim().split('\n').map(l => l.trim()).filter(l => l);
     cleanText = cleanText.replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/, '').trim();
   }
-
-  let quizzes = [];
-  const quizRegex = /\[QUIZ\]([\s\S]*?)\[\/QUIZ\]/g;
-  let quizMatch;
-  while ((quizMatch = quizRegex.exec(cleanText)) !== null) {
-    try { quizzes.push(JSON.parse(quizMatch[1].trim())); } catch (e) { console.error('Failed to parse quiz JSON:', e); }
-  }
-  cleanText = cleanText.replace(/\[QUIZ\][\s\S]*?\[\/QUIZ\]/g, '').trim();
 
   // Parse learning path / course suggestions
   const pathMatch = cleanText.match(/\[LEARNING_PATH\]([\s\S]*?)\[\/LEARNING_PATH\]/);
@@ -1346,14 +891,11 @@ function parseMapTags(text) {
       const parsed = JSON.parse(pathMatch[1].trim());
       learningPath = parsed;
       if (parsed.modules && parsed.modules.length > 0) {
-        // New course format
         saveCourse(parsed);
       } else if (parsed.topics) {
-        // Legacy format
         saveLearningPath(parsed);
       }
     } catch (e) {
-      // Try line-based format (legacy)
       const pathLines = pathMatch[1].trim().split('\n').filter(l => l.trim());
       if (pathLines.length >= 2) {
         learningPath = { title: pathLines[0].trim(), topics: pathLines.slice(1).map(l => l.replace(/^[\d\.\-\*]+\s*/, '').trim()) };
@@ -1363,7 +905,7 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[LEARNING_PATH\][\s\S]*?\[\/LEARNING_PATH\]/, '').trim();
   }
 
-  return { cleanText, options, charts, tables, flowcharts, timelines, scales, beforeAfters, venns, codeblocks, diagrams, hierarchies, maths, steps, spatials, imagines, quizzes, learningPath };
+  return { cleanText, options, charts, tables, flowcharts, timelines, scales, beforeAfters, venns, codeblocks, diagrams, hierarchies, maths, steps, spatials, quizzes, learningPath, inlineVisuals };
 }
 
 function parseKnowledgeMap(content) {
@@ -1603,6 +1145,217 @@ function createSvgElement(tag, attrs, text) {
   return el;
 }
 
+function createVisualElement(type, data) {
+  const wrapper = document.createElement("div");
+
+  if (type === 'chart') {
+    wrapper.className = "chart-container";
+    const canvas = document.createElement("canvas");
+    wrapper.appendChild(canvas);
+    const colors = ['#7c9885', '#9b8a6e', '#6e8a9b', '#9b6e7c', '#8a9b6e', '#7c6e9b', '#9b8a7c', '#6e9b8a'];
+    const datasets = data.datasets
+      ? data.datasets.map((ds, i) => ({
+          label: ds.label || '', data: ds.data,
+          backgroundColor: ds.backgroundColor || colors[i % colors.length] + '40',
+          borderColor: ds.borderColor || colors[i % colors.length],
+          borderWidth: 2, tension: 0.3, pointBackgroundColor: colors[i % colors.length],
+        }))
+      : [{ label: data.ylabel || '', data: data.data,
+          backgroundColor: colors.slice(0, (data.data || []).length).map(c => c + '40'),
+          borderColor: colors.slice(0, (data.data || []).length),
+          borderWidth: 2, tension: 0.3, pointBackgroundColor: '#7c9885',
+        }];
+    new Chart(canvas, {
+      type: data.type || 'bar',
+      data: { labels: data.labels || [], datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: !!data.title, text: data.title || '', color: '#e0e0e0', font: { size: 13, family: "'IBM Plex Sans', sans-serif" } },
+          legend: { display: datasets.length > 1, labels: { color: '#787878', font: { family: "'IBM Plex Sans', sans-serif" } } },
+        },
+        scales: {
+          x: { title: { display: !!data.xlabel, text: data.xlabel || '', color: '#787878', font: { family: "'IBM Plex Sans', sans-serif" } }, ticks: { color: '#4a4a4a', font: { family: "'IBM Plex Sans', sans-serif" } }, grid: { color: '#2a2a2a' } },
+          y: { title: { display: !!data.ylabel, text: data.ylabel || '', color: '#787878', font: { family: "'IBM Plex Sans', sans-serif" } }, ticks: { color: '#4a4a4a', font: { family: "'IBM Plex Sans', sans-serif" } }, grid: { color: '#2a2a2a' } },
+        },
+      },
+    });
+    return wrapper;
+  }
+
+  if (type === 'table') {
+    wrapper.className = "table-container";
+    let html = '<table class="data-table">';
+    if (data.title) html += `<caption>${data.title}</caption>`;
+    if (data.headers) { html += '<thead><tr>'; data.headers.forEach(h => { html += `<th>${h}</th>`; }); html += '</tr></thead>'; }
+    html += '<tbody>';
+    (data.rows || []).forEach(row => { html += '<tr>'; row.forEach(cell => { html += `<td>${cell}</td>`; }); html += '</tr>'; });
+    html += '</tbody></table>';
+    wrapper.innerHTML = html;
+    return wrapper;
+  }
+
+  if (type === 'flowchart') {
+    wrapper.className = "flowchart-container";
+    const mermaidDiv = document.createElement("div");
+    mermaidDiv.className = "mermaid";
+    mermaidDiv.textContent = data;
+    wrapper.appendChild(mermaidDiv);
+    return wrapper;
+  }
+
+  if (type === 'timeline') {
+    wrapper.className = "timeline-visual";
+    if (data.title) { const t = document.createElement("div"); t.className = "timeline-visual-title"; t.textContent = data.title; wrapper.appendChild(t); }
+    const track = document.createElement("div"); track.className = "timeline-track";
+    (data.events || []).forEach(evt => {
+      const item = document.createElement("div"); item.className = "timeline-item";
+      item.innerHTML = `<span class="timeline-dot"></span><span class="timeline-item-date">${evt.date || ''}</span><span class="timeline-item-label">${evt.label || ''}</span>`;
+      track.appendChild(item);
+    });
+    wrapper.appendChild(track);
+    return wrapper;
+  }
+
+  if (type === 'scale') {
+    wrapper.className = "scale-visual";
+    if (data.title) { const t = document.createElement("div"); t.className = "scale-title"; t.textContent = data.title; wrapper.appendChild(t); }
+    const bar = document.createElement("div"); bar.className = "scale-bar";
+    const leftLbl = document.createElement("span"); leftLbl.className = "scale-label scale-label-left"; leftLbl.textContent = data.leftLabel || '';
+    const rightLbl = document.createElement("span"); rightLbl.className = "scale-label scale-label-right"; rightLbl.textContent = data.rightLabel || '';
+    const track = document.createElement("div"); track.className = "scale-track";
+    (data.items || []).forEach(item => {
+      const marker = document.createElement("div"); marker.className = "scale-marker";
+      marker.style.left = `${Math.max(0, Math.min(100, item.position || 50))}%`;
+      marker.innerHTML = `<span class="scale-marker-dot"></span><span class="scale-marker-label">${item.label || ''}</span>`;
+      track.appendChild(marker);
+    });
+    bar.appendChild(leftLbl); bar.appendChild(track); bar.appendChild(rightLbl);
+    wrapper.appendChild(bar);
+    return wrapper;
+  }
+
+  if (type === 'beforeafter') {
+    wrapper.className = "beforeafter-visual";
+    if (data.title) { const t = document.createElement("div"); t.className = "beforeafter-title"; t.textContent = data.title; wrapper.appendChild(t); }
+    const cols = document.createElement("div"); cols.className = "beforeafter-cols";
+    [data.before, data.after].forEach((side, i) => {
+      if (!side) return;
+      const col = document.createElement("div"); col.className = `beforeafter-col ${i === 0 ? 'before' : 'after'}`;
+      col.innerHTML = `<div class="beforeafter-col-label">${side.label || (i === 0 ? 'Before' : 'After')}</div><ul class="beforeafter-list">${(side.items || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
+      cols.appendChild(col);
+    });
+    wrapper.appendChild(cols);
+    return wrapper;
+  }
+
+  if (type === 'venn') {
+    wrapper.className = "venn-visual";
+    if (data.title) { const t = document.createElement("div"); t.className = "venn-title"; t.textContent = data.title; wrapper.appendChild(t); }
+    const diagram = document.createElement("div"); diagram.className = "venn-diagram";
+    const leftCircle = document.createElement("div"); leftCircle.className = "venn-circle venn-left";
+    leftCircle.innerHTML = `<div class="venn-circle-label">${(data.left && data.left.label) || ''}</div><ul>${((data.left && data.left.items) || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
+    const rightCircle = document.createElement("div"); rightCircle.className = "venn-circle venn-right";
+    rightCircle.innerHTML = `<div class="venn-circle-label">${(data.right && data.right.label) || ''}</div><ul>${((data.right && data.right.items) || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
+    const overlap = document.createElement("div"); overlap.className = "venn-overlap";
+    overlap.innerHTML = `<ul>${(data.overlap || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
+    diagram.appendChild(leftCircle); diagram.appendChild(overlap); diagram.appendChild(rightCircle);
+    wrapper.appendChild(diagram);
+    return wrapper;
+  }
+
+  if (type === 'codeblock') {
+    wrapper.className = "codeblock-visual";
+    let header = '';
+    if (data.title || data.language) header = `<div class="codeblock-header"><span class="codeblock-lang">${data.language || ''}</span><span class="codeblock-title-text">${data.title || ''}</span></div>`;
+    const escaped = (data.code || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    wrapper.innerHTML = `${header}<pre class="codeblock-pre"><code>${escaped}</code></pre>`;
+    return wrapper;
+  }
+
+  if (type === 'diagram') {
+    wrapper.className = "diagram-container";
+    const mermaidDiv = document.createElement("div"); mermaidDiv.className = "mermaid"; mermaidDiv.textContent = data;
+    wrapper.appendChild(mermaidDiv);
+    return wrapper;
+  }
+
+  if (type === 'hierarchy') {
+    wrapper.className = "hierarchy-visual";
+    if (data.title) { const t = document.createElement("div"); t.className = "hierarchy-title"; t.textContent = data.title; wrapper.appendChild(t); }
+    if (data.root) { const tree = document.createElement("div"); tree.className = "hierarchy-tree"; tree.appendChild(renderHierNode(data.root, 0)); wrapper.appendChild(tree); }
+    return wrapper;
+  }
+
+  if (type === 'math') {
+    wrapper.className = data.display ? "math-visual math-display" : "math-visual math-inline";
+    try {
+      if (typeof katex !== 'undefined') katex.render(data.formula || '', wrapper, { displayMode: !!data.display, throwOnError: false });
+      else wrapper.textContent = data.formula || '';
+    } catch (e) { wrapper.textContent = data.formula || ''; }
+    return wrapper;
+  }
+
+  if (type === 'steps') {
+    wrapper.className = "steps-visual";
+    if (data.title) { const t = document.createElement("div"); t.className = "steps-title"; t.textContent = data.title; wrapper.appendChild(t); }
+    const stepsContainer = document.createElement("div"); stepsContainer.className = "steps-container";
+    let revealed = 0;
+    (data.steps || []).forEach((step, i) => {
+      const stepEl = document.createElement("div"); stepEl.className = `step-item ${i === 0 ? 'revealed' : 'hidden'}`;
+      stepEl.innerHTML = `<div class="step-marker"><span class="step-num">${i + 1}</span></div><div class="step-body"><div class="step-label">${step.label || ''}</div><div class="step-content">${step.content || ''}</div></div>`;
+      stepsContainer.appendChild(stepEl);
+    });
+    wrapper.appendChild(stepsContainer);
+    if ((data.steps || []).length > 1) {
+      const nextBtn = document.createElement("button"); nextBtn.className = "steps-next-btn"; nextBtn.textContent = "Next step →";
+      revealed = 1;
+      nextBtn.addEventListener("click", () => {
+        const items = stepsContainer.querySelectorAll('.step-item');
+        if (revealed < items.length) { items[revealed].classList.remove('hidden'); items[revealed].classList.add('revealed'); revealed++; if (revealed >= items.length) nextBtn.style.display = 'none'; }
+      });
+      wrapper.appendChild(nextBtn);
+    }
+    return wrapper;
+  }
+
+  if (type === 'spatial') {
+    wrapper.className = "spatial-visual";
+    if (data.title) { const t = document.createElement("div"); t.className = "spatial-title"; t.textContent = data.title; wrapper.appendChild(t); }
+    const canvas = document.createElement("div"); canvas.className = "spatial-canvas";
+    const itemMap = {};
+    (data.items || []).forEach(item => {
+      const el = document.createElement("div");
+      el.className = `spatial-item ${item.size === 'large' ? 'spatial-item-lg' : item.size === 'small' ? 'spatial-item-sm' : 'spatial-item-md'}`;
+      el.style.left = `${item.x || 50}%`; el.style.top = `${item.y || 50}%`; el.textContent = item.label || '';
+      canvas.appendChild(el); itemMap[item.label] = { x: item.x || 50, y: item.y || 50 };
+    });
+    if (data.connections && data.connections.length > 0) {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'spatial-connections'); svg.setAttribute('width', '100%'); svg.setAttribute('height', '100%');
+      data.connections.forEach(conn => {
+        const from = itemMap[conn.from]; const to = itemMap[conn.to];
+        if (from && to) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', `${from.x}%`); line.setAttribute('y1', `${from.y}%`);
+          line.setAttribute('x2', `${to.x}%`); line.setAttribute('y2', `${to.y}%`);
+          line.setAttribute('class', 'spatial-line'); svg.appendChild(line);
+        }
+      });
+      canvas.insertBefore(svg, canvas.firstChild);
+    }
+    wrapper.appendChild(canvas);
+    return wrapper;
+  }
+
+  if (type === 'quiz') {
+    // Quizzes are handled separately in addMsg for interactivity
+    return null;
+  }
+
+  return null;
+}
+
 function renderHierNode(node, depth) {
   const el = document.createElement("div");
   el.className = "hier-node";
@@ -1697,6 +1450,12 @@ function renderMarkdown(text) {
 
     if (line.trim() === '') {
       html += '<div class="spacer"></div>';
+      continue;
+    }
+
+    // Visual placeholders — pass through as block-level elements, not wrapped in <p>
+    if (/^%%VIS_\d+%%$/.test(line.trim())) {
+      html += `<div class="visual-placeholder-slot">${line.trim()}</div>`;
       continue;
     }
 
