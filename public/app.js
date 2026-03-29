@@ -574,7 +574,7 @@ function addMsg(role, text, isReplay) {
     div.appendChild(bubble);
   } else {
     // Parse knowledge map tags before rendering
-    const parsed = isReplay ? { cleanText: stripMapTags(text), options: [], charts: [], tables: [], flowcharts: [] } : parseMapTags(text);
+    const parsed = isReplay ? { cleanText: stripMapTags(text), options: [], charts: [], tables: [], flowcharts: [], timelines: [], scales: [], beforeAfters: [], venns: [], codeblocks: [] } : parseMapTags(text);
     div.innerHTML = renderMarkdown(parsed.cleanText);
 
     // Render options as clickable buttons (only for live messages)
@@ -715,6 +715,136 @@ function addMsg(role, text, isReplay) {
         mermaidDiv.className = "mermaid";
         mermaidDiv.textContent = mermaidCode;
         wrapper.appendChild(mermaidDiv);
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render timelines
+    if (parsed.timelines && parsed.timelines.length > 0) {
+      parsed.timelines.forEach(tl => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "timeline-visual";
+        if (tl.title) {
+          const title = document.createElement("div");
+          title.className = "timeline-visual-title";
+          title.textContent = tl.title;
+          wrapper.appendChild(title);
+        }
+        const track = document.createElement("div");
+        track.className = "timeline-track";
+        (tl.events || []).forEach((evt, i) => {
+          const item = document.createElement("div");
+          item.className = "timeline-item";
+          item.innerHTML = `<span class="timeline-dot"></span><span class="timeline-item-date">${evt.date || ''}</span><span class="timeline-item-label">${evt.label || ''}</span>`;
+          track.appendChild(item);
+        });
+        wrapper.appendChild(track);
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render scales/spectrums
+    if (parsed.scales && parsed.scales.length > 0) {
+      parsed.scales.forEach(sc => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "scale-visual";
+        if (sc.title) {
+          const title = document.createElement("div");
+          title.className = "scale-title";
+          title.textContent = sc.title;
+          wrapper.appendChild(title);
+        }
+        const bar = document.createElement("div");
+        bar.className = "scale-bar";
+        const leftLbl = document.createElement("span");
+        leftLbl.className = "scale-label scale-label-left";
+        leftLbl.textContent = sc.leftLabel || '';
+        const rightLbl = document.createElement("span");
+        rightLbl.className = "scale-label scale-label-right";
+        rightLbl.textContent = sc.rightLabel || '';
+        const track = document.createElement("div");
+        track.className = "scale-track";
+        (sc.items || []).forEach(item => {
+          const marker = document.createElement("div");
+          marker.className = "scale-marker";
+          marker.style.left = `${Math.max(0, Math.min(100, item.position || 50))}%`;
+          marker.innerHTML = `<span class="scale-marker-dot"></span><span class="scale-marker-label">${item.label || ''}</span>`;
+          track.appendChild(marker);
+        });
+        bar.appendChild(leftLbl);
+        bar.appendChild(track);
+        bar.appendChild(rightLbl);
+        wrapper.appendChild(bar);
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render before/after
+    if (parsed.beforeAfters && parsed.beforeAfters.length > 0) {
+      parsed.beforeAfters.forEach(ba => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "beforeafter-visual";
+        if (ba.title) {
+          const title = document.createElement("div");
+          title.className = "beforeafter-title";
+          title.textContent = ba.title;
+          wrapper.appendChild(title);
+        }
+        const cols = document.createElement("div");
+        cols.className = "beforeafter-cols";
+        [ba.before, ba.after].forEach((side, i) => {
+          if (!side) return;
+          const col = document.createElement("div");
+          col.className = `beforeafter-col ${i === 0 ? 'before' : 'after'}`;
+          col.innerHTML = `<div class="beforeafter-col-label">${side.label || (i === 0 ? 'Before' : 'After')}</div><ul class="beforeafter-list">${(side.items || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
+          cols.appendChild(col);
+        });
+        wrapper.appendChild(cols);
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render Venn diagrams
+    if (parsed.venns && parsed.venns.length > 0) {
+      parsed.venns.forEach(vn => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "venn-visual";
+        if (vn.title) {
+          const title = document.createElement("div");
+          title.className = "venn-title";
+          title.textContent = vn.title;
+          wrapper.appendChild(title);
+        }
+        const diagram = document.createElement("div");
+        diagram.className = "venn-diagram";
+        const leftCircle = document.createElement("div");
+        leftCircle.className = "venn-circle venn-left";
+        leftCircle.innerHTML = `<div class="venn-circle-label">${(vn.left && vn.left.label) || ''}</div><ul>${((vn.left && vn.left.items) || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
+        const rightCircle = document.createElement("div");
+        rightCircle.className = "venn-circle venn-right";
+        rightCircle.innerHTML = `<div class="venn-circle-label">${(vn.right && vn.right.label) || ''}</div><ul>${((vn.right && vn.right.items) || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
+        const overlap = document.createElement("div");
+        overlap.className = "venn-overlap";
+        overlap.innerHTML = `<ul>${(vn.overlap || []).map(it => `<li>${it}</li>`).join('')}</ul>`;
+        diagram.appendChild(leftCircle);
+        diagram.appendChild(overlap);
+        diagram.appendChild(rightCircle);
+        wrapper.appendChild(diagram);
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render code blocks
+    if (parsed.codeblocks && parsed.codeblocks.length > 0) {
+      parsed.codeblocks.forEach(cb => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "codeblock-visual";
+        let header = '';
+        if (cb.title || cb.language) {
+          header = `<div class="codeblock-header"><span class="codeblock-lang">${cb.language || ''}</span><span class="codeblock-title-text">${cb.title || ''}</span></div>`;
+        }
+        const escaped = (cb.code || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        wrapper.innerHTML = `${header}<pre class="codeblock-pre"><code>${escaped}</code></pre>`;
         div.appendChild(wrapper);
       });
     }
@@ -878,6 +1008,11 @@ function stripMapTags(text) {
     .replace(/\[CHART\][\s\S]*?\[\/CHART\]/g, '')
     .replace(/\[TABLE\][\s\S]*?\[\/TABLE\]/g, '')
     .replace(/\[FLOWCHART\][\s\S]*?\[\/FLOWCHART\]/g, '')
+    .replace(/\[TIMELINE\][\s\S]*?\[\/TIMELINE\]/g, '')
+    .replace(/\[SCALE\][\s\S]*?\[\/SCALE\]/g, '')
+    .replace(/\[BEFOREAFTER\][\s\S]*?\[\/BEFOREAFTER\]/g, '')
+    .replace(/\[VENN\][\s\S]*?\[\/VENN\]/g, '')
+    .replace(/\[CODEBLOCK\][\s\S]*?\[\/CODEBLOCK\]/g, '')
     .replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/g, '')
     .replace(/\[QUIZ\][\s\S]*?\[\/QUIZ\]/g, '')
     .replace(/\[LEARNING_PATH\][\s\S]*?\[\/LEARNING_PATH\]/g, '')
@@ -939,6 +1074,46 @@ function parseMapTags(text) {
   }
   cleanText = cleanText.replace(/\[FLOWCHART\][\s\S]*?\[\/FLOWCHART\]/g, '').trim();
 
+  let timelines = [];
+  const timelineRegex = /\[TIMELINE\]([\s\S]*?)\[\/TIMELINE\]/g;
+  let timelineMatch;
+  while ((timelineMatch = timelineRegex.exec(cleanText)) !== null) {
+    try { timelines.push(JSON.parse(timelineMatch[1].trim())); } catch (e) { console.error('Failed to parse timeline JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[TIMELINE\][\s\S]*?\[\/TIMELINE\]/g, '').trim();
+
+  let scales = [];
+  const scaleRegex = /\[SCALE\]([\s\S]*?)\[\/SCALE\]/g;
+  let scaleMatch;
+  while ((scaleMatch = scaleRegex.exec(cleanText)) !== null) {
+    try { scales.push(JSON.parse(scaleMatch[1].trim())); } catch (e) { console.error('Failed to parse scale JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[SCALE\][\s\S]*?\[\/SCALE\]/g, '').trim();
+
+  let beforeAfters = [];
+  const baRegex = /\[BEFOREAFTER\]([\s\S]*?)\[\/BEFOREAFTER\]/g;
+  let baMatch;
+  while ((baMatch = baRegex.exec(cleanText)) !== null) {
+    try { beforeAfters.push(JSON.parse(baMatch[1].trim())); } catch (e) { console.error('Failed to parse beforeafter JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[BEFOREAFTER\][\s\S]*?\[\/BEFOREAFTER\]/g, '').trim();
+
+  let venns = [];
+  const vennRegex = /\[VENN\]([\s\S]*?)\[\/VENN\]/g;
+  let vennMatch;
+  while ((vennMatch = vennRegex.exec(cleanText)) !== null) {
+    try { venns.push(JSON.parse(vennMatch[1].trim())); } catch (e) { console.error('Failed to parse venn JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[VENN\][\s\S]*?\[\/VENN\]/g, '').trim();
+
+  let codeblocks = [];
+  const codeRegex = /\[CODEBLOCK\]([\s\S]*?)\[\/CODEBLOCK\]/g;
+  let codeMatch;
+  while ((codeMatch = codeRegex.exec(cleanText)) !== null) {
+    try { codeblocks.push(JSON.parse(codeMatch[1].trim())); } catch (e) { console.error('Failed to parse codeblock JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[CODEBLOCK\][\s\S]*?\[\/CODEBLOCK\]/g, '').trim();
+
   let options = [];
   const optionsMatch = cleanText.match(/\[OPTIONS\]([\s\S]*?)\[\/OPTIONS\]/);
   if (optionsMatch) {
@@ -979,7 +1154,7 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[LEARNING_PATH\][\s\S]*?\[\/LEARNING_PATH\]/, '').trim();
   }
 
-  return { cleanText, options, charts, tables, flowcharts, quizzes, learningPath };
+  return { cleanText, options, charts, tables, flowcharts, timelines, scales, beforeAfters, venns, codeblocks, quizzes, learningPath };
 }
 
 function parseKnowledgeMap(content) {

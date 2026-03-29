@@ -544,6 +544,334 @@ header h1 {
   overflow-x: auto;
 }
 
+/* ─── Timeline Visual ─── */
+.timeline-visual {
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.timeline-visual-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.timeline-track {
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--accent-dim);
+}
+
+.timeline-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  position: relative;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -19px;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg-surface);
+  flex-shrink: 0;
+}
+
+.timeline-item-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-text);
+  min-width: 50px;
+  font-family: var(--font-mono);
+}
+
+.timeline-item-label {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* ─── Scale/Spectrum Visual ─── */
+.scale-visual {
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.scale-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.scale-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scale-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 60px;
+}
+
+.scale-label-left { text-align: right; }
+.scale-label-right { text-align: left; }
+
+.scale-track {
+  flex: 1;
+  height: 4px;
+  background: linear-gradient(to right, var(--accent-dim), var(--accent), #9b6e6e);
+  border-radius: 2px;
+  position: relative;
+  margin: 40px 0 20px;
+}
+
+.scale-marker {
+  position: absolute;
+  top: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scale-marker-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  margin-top: -6px;
+}
+
+.scale-marker-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ─── Before/After Visual ─── */
+.beforeafter-visual {
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.beforeafter-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.beforeafter-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.beforeafter-col {
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.beforeafter-col.before {
+  background: rgba(155, 110, 110, 0.08);
+  border: 1px solid rgba(155, 110, 110, 0.25);
+}
+
+.beforeafter-col.after {
+  background: rgba(124, 152, 133, 0.08);
+  border: 1px solid rgba(124, 152, 133, 0.25);
+}
+
+.beforeafter-col-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.beforeafter-col.before .beforeafter-col-label { color: #d49a9a; }
+.beforeafter-col.after .beforeafter-col-label { color: var(--accent-text); }
+
+.beforeafter-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.beforeafter-list li {
+  font-size: 13px;
+  color: var(--text-dim);
+  padding: 2px 0;
+  line-height: 1.5;
+}
+
+.beforeafter-list li::before {
+  content: '•';
+  margin-right: 8px;
+  color: var(--text-muted);
+}
+
+/* ─── Venn Diagram Visual ─── */
+.venn-visual {
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.venn-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.venn-diagram {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  align-items: start;
+}
+
+.venn-circle {
+  padding: 14px;
+  border-radius: 4px;
+}
+
+.venn-left {
+  background: rgba(124, 152, 133, 0.08);
+  border: 1px solid rgba(124, 152, 133, 0.25);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+}
+
+.venn-right {
+  background: rgba(155, 138, 110, 0.08);
+  border: 1px solid rgba(155, 138, 110, 0.25);
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+}
+
+.venn-overlap {
+  padding: 14px 12px;
+  background: rgba(124, 152, 133, 0.04);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  min-width: 140px;
+}
+
+.venn-circle-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.venn-left .venn-circle-label { color: var(--accent-text); }
+.venn-right .venn-circle-label { color: #c4ad8a; }
+
+.venn-circle ul, .venn-overlap ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.venn-circle li, .venn-overlap li {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 2px 0;
+  line-height: 1.5;
+}
+
+.venn-overlap li {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ─── Code Block Visual ─── */
+.codeblock-visual {
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.codeblock-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+}
+
+.codeblock-lang {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.codeblock-title-text {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.codeblock-pre {
+  margin: 0;
+  padding: 14px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.codeblock-pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
 /* ─── Typing Indicator ─── */
 .typing {
   max-width: 680px;

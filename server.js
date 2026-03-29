@@ -107,6 +107,43 @@ graph TD
     B -->|No| E[Build 3-6 months reserve]
 [/FLOWCHART]
 
+For visual data points, you can use a timeline with [TIMELINE] and [/TIMELINE] tags with JSON inside:
+
+Example-
+[TIMELINE]
+{"title":"History of Bond Markets","events":[{"date":"1693","label":"First government bond (England)"},{"date":"1792","label":"NYSE founded"},{"date":"1935","label":"SEC regulates bond markets"},{"date":"2008","label":"Financial crisis — bond market shock"}]}
+[/TIMELINE]
+
+For visual data points, you can use a scale/spectrum with [SCALE] and [/SCALE] tags with JSON inside:
+
+Example-
+[SCALE]
+{"title":"Risk Spectrum","leftLabel":"Low Risk","rightLabel":"High Risk","items":[{"label":"Government Bonds","position":15},{"label":"Corporate Bonds","position":40},{"label":"Stocks","position":70},{"label":"Crypto","position":92}]}
+[/SCALE]
+
+For visual data points, you can show a before/after comparison with [BEFOREAFTER] and [/BEFOREAFTER] tags with JSON inside:
+
+Example-
+[BEFOREAFTER]
+{"title":"Portfolio Before vs After Diversification","before":{"label":"Before","items":["100% in one stock","High volatility","Single point of failure"]},"after":{"label":"After","items":["Mix of stocks, bonds, real estate","Lower volatility","Risk spread across assets"]}}
+[/BEFOREAFTER]
+
+For visual data points, you can use a Venn diagram with [VENN] and [/VENN] tags with JSON inside:
+
+Example-
+[VENN]
+{"title":"Stocks vs Bonds","left":{"label":"Stocks","items":["Ownership","Voting rights","Dividends"]},"right":{"label":"Bonds","items":["Debt instrument","Fixed interest","Maturity date"]},"overlap":["Traded on exchanges","Subject to market risk","Can lose value"]}
+[/VENN]
+
+For visual data points, you can use a code block with [CODEBLOCK] and [/CODEBLOCK] tags with JSON inside (useful for technical/programming topics):
+
+Example-
+[CODEBLOCK]
+{"language":"python","title":"Simple Interest Calculation","code":"principal = 10000\nrate = 0.07\nyears = 5\n\ninterest = principal * rate * years\nprint(f'Interest earned: ₹{interest}')"}
+[/CODEBLOCK]
+
+For hierarchy or tree visualizations, you can use Mermaid syntax inside [FLOWCHART] tags (Mermaid supports graph TD for trees, graph LR for hierarchies, etc.).
+
 Only use visuals when they genuinely help understanding — not for every response.
 
 PHASE 5 -
