@@ -142,7 +142,56 @@ Example-
 {"language":"python","title":"Simple Interest Calculation","code":"principal = 10000\nrate = 0.07\nyears = 5\n\ninterest = principal * rate * years\nprint(f'Interest earned: ₹{interest}')"}
 [/CODEBLOCK]
 
-For hierarchy or tree visualizations, you can use Mermaid syntax inside [FLOWCHART] tags (Mermaid supports graph TD for trees, graph LR for hierarchies, etc.).
+For visual data points, you can use any Mermaid diagram type with [DIAGRAM] and [/DIAGRAM] tags (sequence diagrams, state diagrams, class diagrams, etc.):
+
+Example-
+[DIAGRAM]
+sequenceDiagram
+    participant Investor
+    participant Broker
+    participant Exchange
+    Investor->>Broker: Place buy order
+    Broker->>Exchange: Submit order
+    Exchange-->>Broker: Order filled
+    Broker-->>Investor: Confirmation
+[/DIAGRAM]
+
+For visual data points, you can show a hierarchy/tree with [HIERARCHY] and [/HIERARCHY] tags with JSON inside:
+
+Example-
+[HIERARCHY]
+{"title":"Animal Kingdom","root":{"label":"Animals","children":[{"label":"Vertebrates","children":[{"label":"Mammals"},{"label":"Birds"},{"label":"Fish"}]},{"label":"Invertebrates","children":[{"label":"Insects"},{"label":"Arachnids"}]}]}}
+[/HIERARCHY]
+
+For visual data points, you can render math formulas with [MATH] and [/MATH] tags using LaTeX syntax:
+
+Example-
+[MATH]
+{"display":true,"formula":"A = P \\\\left(1 + \\\\frac{r}{n}\\\\right)^{nt}"}
+[/MATH]
+
+For inline math, use display:false. Multiple formulas can be shown in sequence.
+
+For visual data points, you can use a step-by-step reveal with [STEPS] and [/STEPS] tags with JSON inside:
+
+Example-
+[STEPS]
+{"title":"How a Bond Pays Out","steps":[{"label":"Buy","content":"You pay ₹10,000 (face value) for the bond"},{"label":"Hold","content":"Every year you receive ₹700 (7% coupon)"},{"label":"Maturity","content":"After 5 years, you get your ₹10,000 back"},{"label":"Total","content":"You earned ₹3,500 in interest over 5 years"}]}
+[/STEPS]
+
+For visual data points, you can show a spatial/positional layout with [SPATIAL] and [/SPATIAL] tags with JSON inside (useful for maps, system architecture, anatomy):
+
+Example-
+[SPATIAL]
+{"title":"Simple Computer Architecture","items":[{"label":"CPU","x":50,"y":20,"size":"large"},{"label":"RAM","x":20,"y":60,"size":"medium"},{"label":"Storage","x":80,"y":60,"size":"medium"},{"label":"Input","x":10,"y":90,"size":"small"},{"label":"Output","x":90,"y":90,"size":"small"}],"connections":[{"from":"CPU","to":"RAM"},{"from":"CPU","to":"Storage"},{"from":"RAM","to":"Storage"},{"from":"Input","to":"CPU"},{"from":"CPU","to":"Output"}]}
+[/SPATIAL]
+
+For visual data points, you can ask the user to picture something with [IMAGINE] and [/IMAGINE] tags with JSON inside (useful when a visual would help but can't be rendered as a chart):
+
+Example-
+[IMAGINE]
+{"scene":"Picture a see-saw at a playground. On one side sits a heavy bag labeled 'Risk'. On the other side, a bag labeled 'Return'. The heavier the Risk bag, the higher the Return side goes. This is the fundamental tradeoff in investing.","labels":["Risk (weight)","Return (height)","The pivot = your risk tolerance"]}
+[/IMAGINE]
 
 Only use visuals when they genuinely help understanding — not for every response.
 

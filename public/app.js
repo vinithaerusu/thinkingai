@@ -574,7 +574,7 @@ function addMsg(role, text, isReplay) {
     div.appendChild(bubble);
   } else {
     // Parse knowledge map tags before rendering
-    const parsed = isReplay ? { cleanText: stripMapTags(text), options: [], charts: [], tables: [], flowcharts: [], timelines: [], scales: [], beforeAfters: [], venns: [], codeblocks: [] } : parseMapTags(text);
+    const parsed = isReplay ? { cleanText: stripMapTags(text), options: [], charts: [], tables: [], flowcharts: [], timelines: [], scales: [], beforeAfters: [], venns: [], codeblocks: [], diagrams: [], hierarchies: [], maths: [], steps: [], spatials: [], imagines: [] } : parseMapTags(text);
     div.innerHTML = renderMarkdown(parsed.cleanText);
 
     // Render options as clickable buttons (only for live messages)
@@ -849,6 +849,161 @@ function addMsg(role, text, isReplay) {
       });
     }
 
+    // Render Mermaid diagrams (sequence, state, class, etc.)
+    if (parsed.diagrams && parsed.diagrams.length > 0) {
+      parsed.diagrams.forEach(mermaidCode => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "diagram-container";
+        const mermaidDiv = document.createElement("div");
+        mermaidDiv.className = "mermaid";
+        mermaidDiv.textContent = mermaidCode;
+        wrapper.appendChild(mermaidDiv);
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render hierarchies
+    if (parsed.hierarchies && parsed.hierarchies.length > 0) {
+      parsed.hierarchies.forEach(hier => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "hierarchy-visual";
+        if (hier.title) {
+          const title = document.createElement("div");
+          title.className = "hierarchy-title";
+          title.textContent = hier.title;
+          wrapper.appendChild(title);
+        }
+        if (hier.root) {
+          const tree = document.createElement("div");
+          tree.className = "hierarchy-tree";
+          tree.appendChild(renderHierNode(hier.root, 0));
+          wrapper.appendChild(tree);
+        }
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render math formulas
+    if (parsed.maths && parsed.maths.length > 0) {
+      parsed.maths.forEach(m => {
+        const wrapper = document.createElement("div");
+        wrapper.className = m.display ? "math-visual math-display" : "math-visual math-inline";
+        try {
+          if (typeof katex !== 'undefined') {
+            katex.render(m.formula || '', wrapper, { displayMode: !!m.display, throwOnError: false });
+          } else {
+            wrapper.textContent = m.formula || '';
+          }
+        } catch (e) {
+          wrapper.textContent = m.formula || '';
+        }
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render step-by-step reveals
+    if (parsed.steps && parsed.steps.length > 0) {
+      parsed.steps.forEach(st => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "steps-visual";
+        if (st.title) {
+          const title = document.createElement("div");
+          title.className = "steps-title";
+          title.textContent = st.title;
+          wrapper.appendChild(title);
+        }
+        const stepsContainer = document.createElement("div");
+        stepsContainer.className = "steps-container";
+        let revealed = 0;
+        (st.steps || []).forEach((step, i) => {
+          const stepEl = document.createElement("div");
+          stepEl.className = `step-item ${i === 0 ? 'revealed' : 'hidden'}`;
+          stepEl.innerHTML = `<div class="step-marker"><span class="step-num">${i + 1}</span></div><div class="step-body"><div class="step-label">${step.label || ''}</div><div class="step-content">${step.content || ''}</div></div>`;
+          stepsContainer.appendChild(stepEl);
+        });
+        wrapper.appendChild(stepsContainer);
+        if ((st.steps || []).length > 1) {
+          const nextBtn = document.createElement("button");
+          nextBtn.className = "steps-next-btn";
+          nextBtn.textContent = "Next step →";
+          revealed = 1;
+          nextBtn.addEventListener("click", () => {
+            const items = stepsContainer.querySelectorAll('.step-item');
+            if (revealed < items.length) {
+              items[revealed].classList.remove('hidden');
+              items[revealed].classList.add('revealed');
+              revealed++;
+              if (revealed >= items.length) {
+                nextBtn.style.display = 'none';
+              }
+            }
+          });
+          wrapper.appendChild(nextBtn);
+        }
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render spatial layouts
+    if (parsed.spatials && parsed.spatials.length > 0) {
+      parsed.spatials.forEach(sp => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "spatial-visual";
+        if (sp.title) {
+          const title = document.createElement("div");
+          title.className = "spatial-title";
+          title.textContent = sp.title;
+          wrapper.appendChild(title);
+        }
+        const canvas = document.createElement("div");
+        canvas.className = "spatial-canvas";
+        const itemMap = {};
+        (sp.items || []).forEach(item => {
+          const el = document.createElement("div");
+          const sizeClass = item.size === 'large' ? 'spatial-item-lg' : item.size === 'small' ? 'spatial-item-sm' : 'spatial-item-md';
+          el.className = `spatial-item ${sizeClass}`;
+          el.style.left = `${item.x || 50}%`;
+          el.style.top = `${item.y || 50}%`;
+          el.textContent = item.label || '';
+          canvas.appendChild(el);
+          itemMap[item.label] = { x: item.x || 50, y: item.y || 50 };
+        });
+        // Draw connections as SVG
+        if (sp.connections && sp.connections.length > 0) {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('class', 'spatial-connections');
+          svg.setAttribute('width', '100%');
+          svg.setAttribute('height', '100%');
+          sp.connections.forEach(conn => {
+            const from = itemMap[conn.from];
+            const to = itemMap[conn.to];
+            if (from && to) {
+              const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+              line.setAttribute('x1', `${from.x}%`);
+              line.setAttribute('y1', `${from.y}%`);
+              line.setAttribute('x2', `${to.x}%`);
+              line.setAttribute('y2', `${to.y}%`);
+              line.setAttribute('class', 'spatial-line');
+              svg.appendChild(line);
+            }
+          });
+          canvas.insertBefore(svg, canvas.firstChild);
+        }
+        wrapper.appendChild(canvas);
+        div.appendChild(wrapper);
+      });
+    }
+
+    // Render imagine/picture-this
+    if (parsed.imagines && parsed.imagines.length > 0) {
+      parsed.imagines.forEach(im => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "imagine-visual";
+        wrapper.innerHTML = `<div class="imagine-icon">👁</div><div class="imagine-scene">${im.scene || ''}</div>${(im.labels && im.labels.length > 0) ? `<div class="imagine-labels">${im.labels.map(l => `<span class="imagine-label">${l}</span>`).join('')}</div>` : ''}`;
+        div.appendChild(wrapper);
+      });
+    }
+
     // Render quizzes
     if (!isReplay && parsed.quizzes && parsed.quizzes.length > 0) {
       parsed.quizzes.forEach(quiz => {
@@ -1013,6 +1168,12 @@ function stripMapTags(text) {
     .replace(/\[BEFOREAFTER\][\s\S]*?\[\/BEFOREAFTER\]/g, '')
     .replace(/\[VENN\][\s\S]*?\[\/VENN\]/g, '')
     .replace(/\[CODEBLOCK\][\s\S]*?\[\/CODEBLOCK\]/g, '')
+    .replace(/\[DIAGRAM\][\s\S]*?\[\/DIAGRAM\]/g, '')
+    .replace(/\[HIERARCHY\][\s\S]*?\[\/HIERARCHY\]/g, '')
+    .replace(/\[MATH\][\s\S]*?\[\/MATH\]/g, '')
+    .replace(/\[STEPS\][\s\S]*?\[\/STEPS\]/g, '')
+    .replace(/\[SPATIAL\][\s\S]*?\[\/SPATIAL\]/g, '')
+    .replace(/\[IMAGINE\][\s\S]*?\[\/IMAGINE\]/g, '')
     .replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/g, '')
     .replace(/\[QUIZ\][\s\S]*?\[\/QUIZ\]/g, '')
     .replace(/\[LEARNING_PATH\][\s\S]*?\[\/LEARNING_PATH\]/g, '')
@@ -1114,6 +1275,54 @@ function parseMapTags(text) {
   }
   cleanText = cleanText.replace(/\[CODEBLOCK\][\s\S]*?\[\/CODEBLOCK\]/g, '').trim();
 
+  let diagrams = [];
+  const diagramRegex = /\[DIAGRAM\]([\s\S]*?)\[\/DIAGRAM\]/g;
+  let diagramMatch;
+  while ((diagramMatch = diagramRegex.exec(cleanText)) !== null) {
+    diagrams.push(diagramMatch[1].trim());
+  }
+  cleanText = cleanText.replace(/\[DIAGRAM\][\s\S]*?\[\/DIAGRAM\]/g, '').trim();
+
+  let hierarchies = [];
+  const hierRegex = /\[HIERARCHY\]([\s\S]*?)\[\/HIERARCHY\]/g;
+  let hierMatch;
+  while ((hierMatch = hierRegex.exec(cleanText)) !== null) {
+    try { hierarchies.push(JSON.parse(hierMatch[1].trim())); } catch (e) { console.error('Failed to parse hierarchy JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[HIERARCHY\][\s\S]*?\[\/HIERARCHY\]/g, '').trim();
+
+  let maths = [];
+  const mathRegex = /\[MATH\]([\s\S]*?)\[\/MATH\]/g;
+  let mathMatch;
+  while ((mathMatch = mathRegex.exec(cleanText)) !== null) {
+    try { maths.push(JSON.parse(mathMatch[1].trim())); } catch (e) { console.error('Failed to parse math JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[MATH\][\s\S]*?\[\/MATH\]/g, '').trim();
+
+  let steps = [];
+  const stepsRegex = /\[STEPS\]([\s\S]*?)\[\/STEPS\]/g;
+  let stepsMatch;
+  while ((stepsMatch = stepsRegex.exec(cleanText)) !== null) {
+    try { steps.push(JSON.parse(stepsMatch[1].trim())); } catch (e) { console.error('Failed to parse steps JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[STEPS\][\s\S]*?\[\/STEPS\]/g, '').trim();
+
+  let spatials = [];
+  const spatialRegex = /\[SPATIAL\]([\s\S]*?)\[\/SPATIAL\]/g;
+  let spatialMatch;
+  while ((spatialMatch = spatialRegex.exec(cleanText)) !== null) {
+    try { spatials.push(JSON.parse(spatialMatch[1].trim())); } catch (e) { console.error('Failed to parse spatial JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[SPATIAL\][\s\S]*?\[\/SPATIAL\]/g, '').trim();
+
+  let imagines = [];
+  const imagineRegex = /\[IMAGINE\]([\s\S]*?)\[\/IMAGINE\]/g;
+  let imagineMatch;
+  while ((imagineMatch = imagineRegex.exec(cleanText)) !== null) {
+    try { imagines.push(JSON.parse(imagineMatch[1].trim())); } catch (e) { console.error('Failed to parse imagine JSON:', e); }
+  }
+  cleanText = cleanText.replace(/\[IMAGINE\][\s\S]*?\[\/IMAGINE\]/g, '').trim();
+
   let options = [];
   const optionsMatch = cleanText.match(/\[OPTIONS\]([\s\S]*?)\[\/OPTIONS\]/);
   if (optionsMatch) {
@@ -1154,7 +1363,7 @@ function parseMapTags(text) {
     cleanText = cleanText.replace(/\[LEARNING_PATH\][\s\S]*?\[\/LEARNING_PATH\]/, '').trim();
   }
 
-  return { cleanText, options, charts, tables, flowcharts, timelines, scales, beforeAfters, venns, codeblocks, quizzes, learningPath };
+  return { cleanText, options, charts, tables, flowcharts, timelines, scales, beforeAfters, venns, codeblocks, diagrams, hierarchies, maths, steps, spatials, imagines, quizzes, learningPath };
 }
 
 function parseKnowledgeMap(content) {
@@ -1391,6 +1600,22 @@ function createSvgElement(tag, attrs, text) {
     el.setAttribute(k, v);
   }
   if (text) el.textContent = text;
+  return el;
+}
+
+function renderHierNode(node, depth) {
+  const el = document.createElement("div");
+  el.className = "hier-node";
+  el.style.marginLeft = depth * 24 + "px";
+  const label = document.createElement("div");
+  label.className = `hier-label ${depth === 0 ? 'hier-root' : ''}`;
+  label.textContent = node.label || '';
+  el.appendChild(label);
+  if (node.children && node.children.length > 0) {
+    node.children.forEach(child => {
+      el.appendChild(renderHierNode(child, depth + 1));
+    });
+  }
   return el;
 }
 
